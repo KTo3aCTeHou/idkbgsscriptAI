@@ -1,4 +1,5 @@
 -- === nothing.club — ЧАСТЬ 1 ===
+-- ССЫЛКА НА МЕСТЕ, ВСЁ БУДЕТ РАБОТАТЬ СРАЗУ:
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
 local Window = Library.CreateLib("nothing.club", "Midnight")
 
@@ -99,42 +100,33 @@ task.spawn(function()
     end
 end)
 
--- === ФУНКЦИЯ СТИЛЯ (ПОЛНЫЙ ФИКС СЛОЕВ КОТА) ===
+-- === ФУНКЦИЯ СТИЛЯ (КОТИК КРАСИВО В УГЛУ ОКНА) ===
 local function ApplyCustomStyle(id)
     pcall(function()
         local coreGui = game:GetService("CoreGui")
-        -- Создаем или чистим глобальный слой для кота
-        local catGui = coreGui:FindFirstChild("nothing_club_background")
-        if catGui then catGui:Destroy() end
         
-        catGui = Instance.new("ScreenGui", coreGui)
-        catGui.Name = "nothing_club_background"
-        catGui.DisplayOrder = -100 -- Принудительно кидаем кота НА САМЫЙ ЗАДНИЙ ПЛАН под менюшку!
+        -- Чистим старый полноэкранный косяк
+        local oldCat = coreGui:FindFirstChild("nothing_club_background")
+        if oldCat then oldCat:Destroy() end
         
-        local bg = Instance.new("ImageLabel", catGui)
-        bg.Name = "CustomBG"
-        bg.Size = UDim2.new(1, 0, 1, 0)
-        bg.Position = UDim2.new(0, 0, 0, 0)
-        bg.BackgroundTransparency = 1
-        bg.Image = "rbxassetid://" .. id
-        bg.ImageTransparency = 0.2
-        bg.ScaleType = Enum.ScaleType.Stretch
-        
-        -- Настраиваем прозрачность внутренних окон Kavo UI, чтобы котик просвечивал
         for _, gui in pairs(coreGui:GetChildren()) do
             if gui:IsA("ScreenGui") and gui:FindFirstChild("Main") then
                 local main = gui.Main
-                for _, child in pairs(main:GetDescendants()) do
-                    if child:IsA("Frame") or child:IsA("ScrollingFrame") then
-                        child.BackgroundTransparency = 0.85
-                        child.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-                    elseif child:IsA("TextButton") then
-                        if not child:FindFirstChild("UICorner") then Instance.new("UICorner", child).CornerRadius = UDim.new(0, 6) end
-                        child.BackgroundTransparency = 0.5
-                        child.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-                        child.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    end
-                end
+                
+                -- Удаляем старого кота, если он был
+                if main:FindFirstChild("CustomBG") then main.CustomBG:Destroy() end
+                
+                -- Создаем маленького аккуратного котика в ПРАВОМ НИЖНЕМ углу менюшки
+                local bg = Instance.new("ImageLabel", main)
+                bg.Name = "CustomBG"
+                bg.Size = UDim2.new(0, 120, 0, 120) -- компактный квадратный размер
+                bg.Position = UDim2.new(1, -130, 1, -130) -- отступ от правого нижнего края
+                bg.ZIndex = 5 -- вешаем поверх подложки, но под кнопки
+                bg.BackgroundTransparency = 1
+                bg.Image = "rbxassetid://" .. id
+                bg.ImageTransparency = 0.3 -- легкая стильная прозрачность
+                bg.ScaleType = Enum.ScaleType.Stretch
+                Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 10)
             end
         end
     end)
@@ -308,9 +300,9 @@ Btn.Draggable = true
 Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
 Btn.MouseButton1Click:Connect(function() Library:ToggleUI() end)
 
--- Стабильный кастомный запуск котика НА ЗАДНЕМ ПЛАНЕ
+-- Стабильный кастомный запуск котика В УГЛУ ОКНА
 task.spawn(function() 
     task.wait(1.5) 
     ApplyCustomStyle(8932053668) 
-    addLog("Котик успешно загружен на фон заднего плана!")
+    addLog("Котик успешно перемещен в угол меню!")
 end)
