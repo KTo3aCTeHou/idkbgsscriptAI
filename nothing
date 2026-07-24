@@ -1,4 +1,4 @@
--- === AI BUBBLE GUM ELITE (FULL, FIXED & NIL VALUE BYPASS) ===
+-- === AI BUBBLE GUM ELITE (FULL, FIXED & CALLBACK BYPASS) ===
 -- ССЫЛКА НА МЕСТЕ (ZanoLeafVN):
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
 local Window = Library.CreateLib("AI BUBBLE GUM ELITE", "Midnight")
@@ -18,35 +18,22 @@ local PICKUPS = workspace:FindFirstChild("Pickups")
 local autoHatch = false
 local selectedEgg, hatchType = "", "Single"
 
--- Рассчитываем время зависания сервера (с учетом взломанных пассов: 5.5 / 1.75 / 1.75 / 2 = ~0.9 сек)
+-- Время зависания сервера (с учетом взломанных пассов: 5.5 / 1.75 / 1.75 / 2 = ~0.9 сек)
 local serverDebounceTime = 0.9 
 
--- === ХАКЕРСКИЙ ПЕРЕХВАТЧИК СЕРВЕРНОЙ ПАУЗЫ (InvokeClient Wall) ===
+-- === ХАКЕРСКИЙ ПЕРЕХВАТЧИК СЕРВЕРНОЙ ПАУЗЫ (ИСПРАВЛЕННЫЙ) ===
 if REMOTE_FUNC and REMOTE_FUNC:IsA("RemoteFunction") then
-    local oldOnClientInvoke = REMOTE_FUNC.OnClientInvoke
+    -- ВАЖНО: Больше НЕ считываем старый OnClientInvoke, чтобы движок Roblox не ругался!
     
     REMOTE_FUNC.OnClientInvoke = function(action, ...)
         if action == "DataChanged" and autoHatch then
             -- Ловим сервер на строчке InvokeClient! Заставляем его ждать, пока сгорит его дебаунс
             task.wait(serverDebounceTime) 
-            
-            -- Безопасный вызов старого колбэка с проверкой на существование (Фикс nil value)
-            if oldOnClientInvoke and type(oldOnClientInvoke) == "function" then
-                local success, result = pcall(function(...)
-                    return oldOnClientInvoke(action, ...)
-                end, ...)
-                if success then return result end
-            end
-            return true -- Возвращаем заглушку успеха, если оригинала нет или он упал
+            return true -- Возвращаем серверу сигнал успеха, размораживая его поток
         end
         
-        -- Для всех остальных системных вызовов отвечаем мгновенно и без задержек
-        if oldOnClientInvoke and type(oldOnClientInvoke) == "function" then
-            local success, result = pcall(function(...)
-                return oldOnClientInvoke(action, ...)
-            end, ...)
-            if success then return result end
-        end
+        -- Для всех остальных системных вызовов возвращаем true, чтобы игра не зависала
+        return true
     end
 end
 
@@ -159,7 +146,7 @@ EggSection:NewToggle("Auto Hatch", "Старт", function(s)
         task.spawn(function()
             while autoHatch do
                 fastSpamHatch()
-                -- Тайминг спама под разморозку
+                -- Идеальный спам под обнуление дебаунса
                 task.wait(0.05) 
             end
         end)
