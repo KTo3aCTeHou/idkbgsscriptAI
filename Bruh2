@@ -1,0 +1,142 @@
+local Kavo = loadstring(game:HttpGet("https://githubusercontent.com"))()
+local window = Kavo.CreateLib("BGS PRO SCRIPT (Optimized)", "DarkTheme")
+
+-- РАЗДЕЛЫ И ВКЛАДКИ (Полное сохранение вашей структуры)
+local mainTab = window:NewTab("Авто-Фарм")
+local eggTab = window:NewTab("Яйца")
+
+local farmSection = mainTab:NewSection("Сбор Ресурсов")
+local eggSection = eggTab:NewSection("Макрос Открытия")
+
+-- СЕРВИСЫ
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+
+-- РЕМОЙТЫ И ИВЕНТЫ БГС
+local networkRemote = ReplicatedStorage:FindFirstChild("Network") or ReplicatedStorage:FindFirstChild("Remotes")
+local openEggEvent = ReplicatedStorage:FindFirstChild("OpenEgg")
+
+-- ГЛОБАЛЬНЫЕ НАСТРОЙКИ (Ваши оригинальные флаги)
+_G.coins = false
+_G.gems = false
+_G.blocks = false
+_G.hatch = false
+
+-- Настройки для яиц
+_G.selectedEgg = "Common Egg"
+_G.hatchMode = "Multi" -- По умолчанию "Multi" (Open 3) из логов ИИ
+
+-- ========================================================
+-- [МЕХАНИКА 1: СБОР РЕСУРСОВ] (Полное сохранение вашей логики)
+-- ========================================================
+
+-- Фоновый поток для сбора монет
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if _G.coins and Workspace:FindFirstChild("Coins") then
+            for _, coin in pairs(Workspace.Coins:GetChildren()) do
+                if coin:IsA("BasePart") and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    coin.CFrame = localPlayer.Character.HumanoidRootPart.CFrame
+                end
+            end
+        end
+    end
+end)
+
+-- Фоновый поток для сбора кристаллов
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if _G.gems and Workspace:FindFirstChild("Gems") then
+            for _, gem in pairs(Workspace.Gems:GetChildren()) do
+                if gem:IsA("BasePart") and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    gem.CFrame = localPlayer.Character.HumanoidRootPart.CFrame
+                end
+            end
+        end
+    end
+end)
+
+-- Фоновый поток для сбора блоков
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if _G.blocks and Workspace:FindFirstChild("Blocks") then
+            for _, block in pairs(Workspace.Blocks:GetChildren()) do
+                if block:IsA("BasePart") and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    block.CFrame = localPlayer.Character.HumanoidRootPart.CFrame
+                end
+            end
+        end
+    end
+end)
+
+-- ========================================================
+-- [МЕХАНИКА 2: УЛЬТРА-СКОРОСТНОЕ ОТКРЫТИЕ ЯИЦ] (Оптимизация)
+-- ========================================================
+
+-- Базовая функция отправки запроса
+local function sendHatchRequest()
+    if _G.hatch and networkRemote then
+        -- Шлем точные аргументы, которые ждет сервер BGS
+        networkRemote:FireServer("PurchaseEgg", _G.selectedEgg, _G.hatchMode)
+    end
+end
+
+-- Умный перехватчик: ловим системный сигнал об открытии яйца
+if openEggEvent and openEggEvent:IsA("RemoteEvent") then
+    openEggEvent.OnClientEvent:Connect(function()
+        -- Как только сервер закончил просчет и прислал ответ — шлем следующий запрос МГНОВЕННО,
+        -- не дожидаясь окончания тяжелых анимаций HatchEgg (линия 616) на клиенте!
+        if _G.hatch then
+            sendHatchRequest()
+        end
+    end)
+end
+
+-- ========================================================
+-- [ИНТЕРФЕЙС KAVO UI] (Полное сохранение структуры ваших кнопок)
+-- ========================================================
+
+-- Вкладка авто-фарма ресурсов
+farmSection:NewToggle("Сбор Монет", "Автоматически притягивает монеты к персонажу", function(state)
+    _G.coins = state
+end)
+
+farmSection:NewToggle("Сбор Кристаллов", "Автоматически притягивает гемы к персонажу", function(state)
+    _G.gems = state
+end)
+
+farmSection:NewToggle("Сбор Блоков", "Автоматически притягивает спавнящиеся блоки", function(state)
+    _G.blocks = state
+end)
+
+-- Вкладка управления яйцами
+eggSection:NewTextBox("Название Яйца", "Введите точное имя яйца (например: Spotted Egg)", function(text)
+    _G.selectedEgg = text
+end)
+
+eggSection:NewDropdown("Тип открытия", "Выберите количество открываемых за раз яиц", {"Single", "Multi"}, function(currentOption)
+    _G.hatchMode = currentOption
+end)
+
+eggSection:NewToggle("Авто-Открытие Яиц (Умный Скорострел)", "Оптимизировано под серверные тайминги без спама", function(state)
+    _G.hatch = state
+    if state then
+        -- Первичный толчок очереди
+        sendHatchRequest()
+        
+        -- Безопасный фоновый поток (Защита от потери сетевых пакетов)
+        task.spawn(function()
+            while _G.hatch do
+                task.wait(1.2) -- Если за 1.2 сек серверный ивент не вернулся, подталкиваем цикл заново
+                if _G.hatch then
+                    sendHatchRequest()
+                end
+            end
+        end)
+    end
+end)
