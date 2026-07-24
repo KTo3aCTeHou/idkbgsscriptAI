@@ -1,5 +1,5 @@
 -- === AI BUBBLE GUM ELITE (HYBRID FINAL FIXED) — ЧАСТЬ 1 ===
-local Library = loadstring(game:HttpGet("https://githubusercontent.com"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
 local Window = Library.CreateLib("AI BUBBLE GUM ELITE (GOD)", "Midnight")
 
 -- === ИНИЦИАЛИЗАЦИЯ ===
