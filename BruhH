@@ -1,6 +1,7 @@
 -- === AI BUBBLE GUM ELITE (CONSOLE & LOGS UPDATE) ===
 -- ССЫЛКА НА МЕСТЕ (ZanoLeafVN):
-local Library = loadstring(game:HttpGet("https://githubusercontent.com"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
+
 local Window = Library.CreateLib("AI BUBBLE GUM ELITE (CONSOLE)", "Midnight")
 
 -- === ИНИЦИАЛИЗАЦИЯ ===
