@@ -1,4 +1,4 @@
--- === AI BUBBLE GUM ELITE (FULL, FIXED & SERVER BYPASS INTEGRATED) ===
+-- === AI BUBBLE GUM ELITE (FULL, FIXED & DATASTORE ERROR BYPASS) ===
 -- ССЫЛКА НА МЕСТЕ (ZanoLeafVN):
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
 local Window = Library.CreateLib("AI BUBBLE GUM ELITE", "Midnight")
@@ -30,14 +30,22 @@ if REMOTE_FUNC and REMOTE_FUNC:IsA("RemoteFunction") then
             -- Ловим сервер на строчке InvokeClient! Заставляем его ждать, пока сгорит его дебаунс
             task.wait(serverDebounceTime) 
             
+            -- Безопасный возврат оригинальной функции, чтобы не вызывать ошибку DataStore
             if oldOnClientInvoke then
-                return oldOnClientInvoke(action, ...)
+                local success, result = pcall(function()
+                    return oldOnClientInvoke(action, ...)
+                end)
+                if success then return result end
             end
-            return
+            return true -- Возвращаем заглушку успеха, если оригинал упал
         end
         
+        -- Для всех остальных системных вызовов отвечаем мгновенно и без задержек
         if oldOnClientInvoke then
-            return oldOnClientInvoke(action, ...)
+            local success, result = pcall(function()
+                return oldOnClientInvoke(action, ...)
+            end)
+            if success then return result end
         end
     end
 end
@@ -151,7 +159,7 @@ EggSection:NewToggle("Auto Hatch", "Старт", function(s)
         task.spawn(function()
             while autoHatch do
                 fastSpamHatch()
-                -- Стреляем каждые 0.05 сек. Сервер будет размораживаться ровно к спаду дебаунса!
+                -- Оптимальный тайминг спама под разморозку
                 task.wait(0.05) 
             end
         end)
