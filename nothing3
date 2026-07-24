@@ -1,236 +1,429 @@
--- =========================================================================
--- ЧАСТЬ 1 ИЗ 4: ИНИЦИАЛИЗАЦИЯ СЕТИ И РЕMУТOВ ОНЕТТА
--- =========================================================================
-print("📍 [LINE 1] Старт MainServer. Подключаем сервисы...")
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerStorage = game:GetService("ServerStorage")
+local DataService = {}
 
-print("📍 [LINE 7] Создаем глобальные таблицы кэша...")
-cache = {}
-hivesCache = {}
-onettRemotes = {}
+local DS = game:GetService("DataStoreService"):GetDataStore("PlayerDataMM")
 
-print("📍 [LINE 12] Ждем появление папки Events...")
-local eventsModule = ReplicatedStorage:WaitForChild("Events")
+local Utils = require(game:GetService("ServerScriptService").Utils)
 
-local function getRemote(name, className)
-	local target = eventsModule:FindFirstChild(name)
-	if target and target.ClassName ~= className then
-		target:Destroy()
-		target = nil
+local playerDatas = setmetatable({},{__index = {}})
+local DefaultPlayerData = {
+	COINS = 999999999999999999,
+	EQUIPPED_ITEMS = {
+		[1] = "Bubble Gum",
+		[2] = "Normal Gum",
+		[3] = "Normal Face",
+	},
+	BUBBLE_SIZE = 0,
+	GEMS = 999999999999999999,
+	FLAVOR_INVENTORY = {
+		"Bubble Gum",
+	},
+	GUM_INVENTORY = {
+		"Normal Gum",
+	},
+	BUBBLES_BLOWN = 0,
+	REBIRTHS = 0,
+	ACHIEVEMENTS = {},
+	PETS = {},
+	CHECKPOINTS = {},
+	CHEST_REGEN_TIMES = {},
+	COLLECTED_ITEMS = {},
+	REDEEMED_CODES = {},
+	TRADE_BANNED = {},
+	TRADE_SESSION_BANNED = false,
+	BAN_LOGS = {},
+	BANNED = false,
+	DIALOGS = {},
+	EGGS_OPENED = 0,
+	SHINY_CHECK = 0,
+	CANDY_CANES = 999999999999999999,
+	SETTINGS = {},
+	CHRISTMAS_REWARDS = {},
+	CLAIMED_REWARDS = {},
+	CANDY = 999999999999999999,
+	CLAIMED_DOMINUS = false,
+	PRODUCT_PASSES = {},
+	REWARDS = {},
+	OWNED_WORLDS = {},
+	HATS = {},
+	BLOCKS = 999999999999999999,
+	CANDY_150_CHECK = false,
+	BOOSTS = {},
+	CLAIMED_HATCH_REWARDS = {},
+	CLAIMED_BUBBLE_REWARDS = {},
+	SHELLS = 999999999999999999,
+	GROUP_BENEFIT_TIME = 0,
+	TEAMS = {},
+	PEARLS = 999999999999999999,
+	EGGHUNT = {},
+	EGGHUNTCLAIMED = {},
+	FACE_INVENTORY = {},
+	STARS = 999999999999999999,
+	POTIONS = {},
+	EXTRA_PETS = 0,
+	BUBBLE_INCREASE = 0,
+	SET_LUCK = game.ReplicatedStorage.Assets.AdminData.LuckIncrease.Value,
+	AUTO_DELETE = {
+		["Common"] = false,
+		["Unique"] = false,
+		["Rare"] = false,
+		["Epic"] = false,
+		["Easy Legendary"] = false,
+		["Non Secret"] = false,
+		SelectedPets = {},
+	},
+	DATA_UPDATE_COUNT = 0,
+	LAST_GAME_VERSION = 0,
+	BuffsPriority = {
+		"Stars",
+		"Pearls",
+		"Shells",
+		"Blocks",
+		"Candy",
+		"CandyCanes"
+	},
+	ItemToGamepassReference = {
+		["Quantum Gum"] = "Quantumn Gum",
+		["VIP Gum"] = "VIP",
+		["VIP Flavor"] = "VIP"
+	},
+	Leaderstats = {
+		Coins = 999999999999999999,
+		["Bubbles Blown"] = 0,
+		Gems = 999999999999999999,
+		["Eggs Opened"] = 0
+	},
+}
+
+function DataService:LoadFirst(plr)
+	if script:FindFirstChild(plr.Name) then
+		script:FindFirstChild(plr.Name):Destroy()
 	end
-	if not target then
-		target = Instance.new(className)
-		target.Name = name
-		target.Parent = eventsModule
+end
+
+function DataService:LockData(plr, lockState)
+	return true
+end
+
+function DataService:GetPlayerData(plr, index)
+	if not game.Players:FindFirstChild(plr.Name) then return end
+	if not script:FindFirstChild(plr.Name) then
+		local s,plrData = false,nil
+
+		repeat
+			s,plrData = pcall(function()
+				return DS:GetAsync(plr.UserId)
+			end)
+		until s
+
+		if plrData == nil then
+			plrData = Utils.ShallowCopy(DefaultPlayerData)
+		end
+
+		for i,v in pairs(DefaultPlayerData) do
+			if type(plrData[i])~=type(v) then
+				plrData[i]=v
+			end
+		end
+
+		for i,v in pairs(plrData["PETS"]) do
+			if not v[9] then table.remove(plrData["PETS"],i) end
+		end
+
+		local foundGUIDS = {}
+		for i,v in pairs(plrData["PETS"]) do
+			if table.find(foundGUIDS,v[1]) then
+				table.remove(plrData["PETS"],i)
+			else
+				table.insert(foundGUIDS,v[1])
+			end
+		end
+
+		plrData["SET_LUCK"] = game.ReplicatedStorage.Assets.AdminData.LuckIncrease.Value
+
+		plrData["TRADE_BANNED"] = false
+		plrData["TRADE_SESSION_BANNED"] = false
+
+		if not script:FindFirstChild(plr.Name) then
+			local a = game:GetService("ServerStorage").DataModule:Clone()
+			a.Parent = script
+			a.Name = plr.Name
+			require(a).Data = plrData
+			if index then return plrData[index] end
+			return plrData
+		end
+	else
+		if index then return require(script[plr.Name]).Data[index] end
+		return require(script[plr.Name]).Data
 	end
-	return target
-end
-
-print("📍 [LINE 28] Начинаем ковровую сборку ремутов Онетта...")
-for _, child in ipairs(eventsModule:GetChildren()) do
-	if child:IsA("RemoteEvent") or child:IsA("RemoteFunction") then
-		onettRemotes[child.Name] = child
+	--[[
+	local s,plrData = false,nil
+	repeat
+		s,plrData = pcall(function()
+			return DS:GetAsync(plr.UserId)
+		end)
+		wait()
+	until s
+	if not plrData then
+		plrData = DefaultPlayerData
 	end
-end
-
--- Железно регистрируем абсолютно все критические каналы из твоего дампа
-getRemote("ToolCollectEvent", "RemoteEvent")
-getRemote("InteractNPC", "RemoteEvent")
-getRemote("QuestEvent", "RemoteEvent")
-getRemote("ChallengeEvent", "RemoteEvent")
-getRemote("ClientSetUpListeners", "RemoteEvent")
-getRemote("ServerItemPackEvent", "RemoteEvent")
-getRemote("HiveClaimed", "RemoteEvent")
-getRemote("UpdateHive", "RemoteEvent")
-getRemote("EquipCollector", "RemoteEvent")
-getRemote("EquipBackpack", "RemoteEvent")
-getRemote("BoostMarketUpdate", "RemoteEvent")
-getRemote("FlowerRegen", "RemoteEvent")
-getRemote("ClientChatTrigger", "RemoteEvent")
-getRemote("ClientRainingEvent", "RemoteEvent")
-getRemote("ServerNotification", "RemoteEvent")
-getRemote("MonsterHitEvent", "RemoteEvent")
-
-getRemote("RetrievePlayerStats", "RemoteFunction")
-getRemote("RetrievePlayerStatSummary", "RemoteFunction")
-getRemote("RetrieveCachedPlayerStat", "RemoteFunction")
-getRemote("RetrievePlayerStatsIntervalBackups", "RemoteFunction")
-getRemote("ClientBuyItem", "RemoteFunction")
-getRemote("RequestConversion", "RemoteFunction")
-getRemote("ClaimHive", "RemoteFunction")
-
-print("📍 [LINE 64] Привязываем версию ServerVersion...")
-local serverVersionRf = getRemote("ServerVersion", "RemoteFunction")
-serverVersionRf.OnServerInvoke = function() return 621 end
-
-for _, pn in ipairs({"PingSession", "Heartbeat"}) do 
-	local pf = getRemote(pn, "RemoteFunction") pf.OnServerInvoke = function() return true end 
-end
--- =========================================================================
--- ЧАСТЬ 2 ИЗ 4: АСИНХРОННЫЕ ЯДРА И СБОРКА СТАТОВ DEX
--- =========================================================================
-print("📍 [LINE 72] Изолируем require ядер Онетта в асинхронные потоки...")
-DS, PT, HM = nil, nil, nil
-task.spawn(function() 
-	print("📍 [LINE 75] task.spawn DS стартовал")
-	local ok, res = pcall(function() return require(ServerStorage:WaitForChild("DataStore", 3)) end)
-	if ok and res then DS = res print("💾 [Core Load] DataStore успешно подключен!") end
-end)
-task.spawn(function() 
-	print("📍 [LINE 80] task.spawn PT стартовал")
-	local ok, res = pcall(function() return require(ServerStorage:WaitForChild("PollenTools", 3)) end)
-	if ok and res then PT = res print("🌸 [Core Load] PollenTools успешно подключен!") end
-end)
-task.spawn(function() 
-	print("📍 [LINE 85] task.spawn HM стартовал")
-	local ok, res = pcall(function() return require(ServerStorage:WaitForChild("HoneycombManager", 3)) end)
-	if ok and res then HM = res print("🐝 [Core Load] HoneycombManager успешно подключен!") end
-end)
-
-print("📍 [LINE 90] Привязываем авто-заглушки защиты от зависания сети...")
-for name, remote in pairs(onettRemotes) do
-	if remote:IsA("RemoteFunction") and name ~= "ServerVersion" and name ~= "PingSession" and name ~= "Heartbeat" and name ~= "ClientBuyItem" and name ~= "ClaimHive" and name ~= "RequestConversion" and name ~= "RetrievePlayerStats" and name ~= "RetrievePlayerStatSummary" and name ~= "RetrieveCachedPlayerStat" and name ~= "RetrievePlayerStatsIntervalBackups" then
-		remote.OnServerInvoke = function(player, ...) return true end
-	elseif remote:IsA("RemoteEvent") and name ~= "ToolCollectEvent" and name ~= "QuestEvent" and name ~= "ClientSetUpListeners" and name ~= "InteractNPC" then
-		remote.OnServerEvent:Connect(function(player, ...) end)
+	if not playerDatas[plr] then
+		playerDatas[plr] = plrData
 	end
+	plrData = playerDatas[plr]
+
+	return plrData
+	]]--
 end
 
-getCanonicalRemote = getRemote
-
-print("📍 [LINE 104] Вспомогательные функции анатомии Dex...")
-local function mkV(parent, vtype, name, val)
-	local v = parent:FindFirstChild(name) or Instance.new(vtype)
-	v.Name = name if val ~= nil then v.Value = val end v.Parent = parent return v 
-end
-local function mkFolder(parent, name)
-	local f = parent:FindFirstChild(name) or Instance.new("Folder") f.Name = name f.Parent = parent return f 
-end
-
-local function buildBssAnatomy(targetParent, baseData)
-	print("📍 [LINE 114] Вызов buildBssAnatomy для: " .. targetParent.Name)
-	local coreStats = mkFolder(targetParent, "CoreStats")
-	mkV(coreStats, "NumberValue", "Capacity", baseData.Capacity or 200)
-	mkV(coreStats, "NumberValue", "Honey", baseData.Honey or 0)
-	mkV(coreStats, "NumberValue", "Pollen", baseData.Pollen or 0)
-
-	print("📍 [LINE 120] Цикл флагов трейда...")
-	local tradeConfig = mkFolder(targetParent, "TradeConfig")
-	local tradeFlags = { "CanTrade", "IsTrading", "RequestsEnabled" }
-
-	for _, flagName in ipairs(tradeFlags) do
-		local boolVal = tradeConfig:FindFirstChild(flagName) or Instance.new("BoolValue")
-		boolVal.Name = flagName
-		boolVal.Value = (flagName == "CanTrade" or flagName == "RequestsEnabled")
-		boolVal.Parent = tradeConfig
+function DataService:SetPlayerData(plr,data,index)
+	if index then
+		require(script[plr.Name]).Data[index] = data
+	else
+		require(script[plr.Name]).Data = data
 	end
-	mkV(targetParent, "ObjectValue", "ActivatableTarget")
-	print("📍 [LINE 133] Финал buildBssAnatomy")
+	return true
 end
--- =========================================================================
--- ЧАСТЬ 3 ИЗ 3: КОНВЕЙЕР ИГРОКА INITPLAYER С БАФФАМИ СКОРОСТИ
--- =========================================================================
-print("📍 [LINE 136] Создаем функцию инициализации игрока initPlayer...")
-local function initPlayer(plr)
-	print("📦 [MainServer Core] Рождение сессии игрока: " .. plr.Name)
 
-	local bd = {
-		Honey = 10000, Capacity = 200, Pollen = 0, Tickets = 10, TotalHoney = 10000, DailyHoney = 0,
-		PlayerMovespeed = 16, PlayerJumpPower = 50,
-		Gear = { Collectors = { "Scooper" }, Bags = { "Pouch" } },
-		EquippedCollector = "Scooper", EquippedBackpack = "Pouch",
-		Eggs = { ["BasicEgg"] = 1, ["Basic Egg"] = 1 },
-		Stickers = {}, StickerBook = { Owned = {}, Slots = 10, Used = 0 },
-		Badges = {}, Bees = {}, OwnedBees = {}, Quests = {}, Honeycomb = { Owner = plr.Name, HiveId = 0, Bees = {} }
+function DataService:GetRobuxSpent(plr)
+	local plrData = DataService:GetPlayerData(plr)
+	local rbx = 0
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388172) then
+		rbx += 150
+	end
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388220) then
+		rbx += 750
+	end
+
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388259) then
+		rbx += 750
+	end
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 29768338) then
+		rbx += 1250
+	end
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 28728297) then
+		rbx += 500
+	end
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388460) then
+		rbx += 500
+	end
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388530) then
+		rbx += 150
+	end
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388602) then
+		rbx += 350
+	end
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388530) then
+		rbx += 250
+	end
+	if game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37392711) then
+		rbx += 250
+	end
+
+	local devProductRobux = plrData["DEV_PRODUCT_ROBUX"]
+	if not devProductRobux then
+		devProductRobux = 0
+	end
+	rbx += devProductRobux
+	return rbx
+end
+
+function DataService:GetOwnedPasses(plr: Player)
+	local plrData = DataService:GetPlayerData(plr)
+	local Passes = {
+		["2x Coins"] = true,
+		["Quantum Gum"] = true,
+		["2x Gems"] = true,
+		["VIP"] = true,
+		["Sprint"] = true,
+		["+5 Pets"] = true,
+		["+100 Slots"] = true,
+		["Fast Chewer"] = true,
+		["2x XP"] = true,
+		["Space Boots"] = true,
+		["+30 Slots"] = true,
+		["Auto Achievement"] = true,
+		["Lucky Chances"] = true,
+		["+500 Slots"] = true,
+		["Multi Egg"] = true,
+		["2x Candy Canes"] = true,
+		["Auto Egg"] = true,
+		["2x Candy"] = true,
+		["+100 Hat Slots"] = true,
+		["+500 Hat Slots"] = true,
+		["2x Blocks"] = true,
+		["+1000 Slots"] = true,
+		["2x Shells"] = true,
+		["2x Pearls"] = true,
+		["2x Stars"] = true,
+		["+50 Pets"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388172) or game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 28647375),
+		["Infinite Pets"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388220) or game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 28647386),
+		["+30K Storage"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388259) or game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 28728297),
+		["10x Luck"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388297) or game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 29042059),
+		["Max Level / Enchant"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388351) or game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 29768338),
+		["Fast Hatch"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388460) or game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 31778919),
+		["+3 Auto Delete Slots"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388530) or game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 32007954),
+		["Infinite Auto Delete Slots"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388602) or game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 32008012),
+		["5x Luck"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37388396) or game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 32749417),
+		["FunnySprint"] = game:GetService("MarketplaceService"):UserOwnsGamePassAsync(plr.UserId, 37392711),
 	}
 
-	print("📍 [LINE 151] Запуск task.spawn DataStore.Load внутри плеера...")
-	task.spawn(function()
-		print("📍 [LINE 153] ФОН: Чтение DataStore...")
-		local ok, res = pcall(function() if DS and DS.Load then return DS.Load("BSS_Alpha_Save_v3", plr.UserId) end return nil end)
-		if ok and res and type(res) == "table" then
-			res.Eggs = type(res.Eggs) == "table" and res.Eggs or bd.Eggs
-			res.StickerBook = type(res.StickerBook) == "table" and res.StickerBook or bd.StickerBook
-			res.Gear = type(res.Gear) == "table" and res.Gear or bd.Gear
-			res.Quests = type(res.Quests) == "table" and res.Quests or bd.Quests
-			bd = res
-			if plr:FindFirstChild("CoreStats") then plr.CoreStats.Honey.Value = bd.Honey or 10000 end
-			if plr:FindFirstChild("leaderstats") and plr.leaderstats:FindFirstChild("Honey") then plr.leaderstats.Honey.Value = bd.Honey or 10000 end
+	if plr:IsInGroup(14465969) then
+		if plr:GetRankInGroup(14465969) >= 240 then
+			for index,value in pairs(Passes) do
+				Passes[index] = true
+			end
 		end
-		print("📍 [LINE 163] ФОН: Финал чтения DataStore")
-	end)
+	end
 
-	cache[plr] = bd
-	print("📍 [LINE 167] Вызов buildBssAnatomy для игрока...")
-	buildBssAnatomy(plr, bd)
-
-	local ls = Instance.new("Folder") ls.Name = "leaderstats" ls.Parent = plr
-	local hv = Instance.new("NumberValue") hv.Name = "Honey" hv.Value = bd.Honey or 10000 hv.Parent = ls
-
-	print("📍 [LINE 173] Подключаем CharacterAdded...")
-	plr.CharacterAdded:Connect(function(ch)
-		print("📦 [MainServer Core] Персонаж спавнулся в Workspace. Дублируем статы в модель тела!")
-		buildBssAnatomy(ch, bd)
-
-		local humanoid = ch:WaitForChild("Humanoid", 5)
-		if humanoid then
-			humanoid.WalkSpeed = bd.PlayerMovespeed or 16
-			humanoid.JumpPower = bd.PlayerJumpPower or 50
+	if plrData["AllGamepasses"] then
+		for index,value in pairs(Passes) do
+			Passes[index] = true
 		end
+	end
 
-		mkV(plr, "Vector3Value", "SpawnPos", ch:GetPivot().Position)
-		mkV(ch, "Vector3Value", "SpawnPos", ch:GetPivot().Position)
-
-		task.wait(1.5)
-		pcall(function()
-			eventsModule.ServerItemPackEvent:FireClient(plr, "Update", {Honey = bd.Honey, Pollen = bd.Pollen, Capacity = bd.Capacity})
-			eventsModule.ServerItemPackEvent:FireClient(plr, "HiveInitReady", {HiveId = 0, Data = {}})
-			eventsModule.ServerItemPackEvent:FireClient(plr, "SetupListenersReady", {Ready = true})
-			eventsModule.ServerItemPackEvent:FireClient(plr, "ReplicationReady", {Ready = true})
-		end)
-		print("📍 [LINE 194] Конец выполнения CharacterAdded")
-	end)
-	print("📍 [LINE 196] Конец выполнения функции initPlayer")
+	return Passes
 end
 
-print("📍 [LINE 199] Вешаем сетевое событие Players.PlayerAdded...")
-Players.PlayerAdded:Connect(function(plr) 
-	print("📍 [LINE 201] Событие PlayerAdded СРАБОТАЛО для: " .. plr.Name)
-	initPlayer(plr) 
-end)
-if not hid then hid = 1 end
-for otherPlayer, id in pairs(hivesCache) do if id == hid and otherPlayer ~= p then return false end end
-
-local pData = cache[p] hivesCache[p] = hid
-if HM and HM.SetHiveSlot then pcall(function() HM.SetHiveSlot(p, hid) end) 
-elseif HM and HM.ClaimHive then pcall(function() HM.ClaimHive(p, hid) end) end
-
-pData.HiveSlot = hid
-pData.Honeycomb = pData.Honeycomb or { Owner = p.Name, HiveId = hid, Bees = {} }
-pData.Honeycomb.Bees = type(pData.Honeycomb.Bees) == "table" and pData.Honeycomb.Bees or {}
-
-pcall(function() 
-	eventsModule.HiveClaimed:FireAllClients(p, hid) 
-	eventsModule.UpdateHive:FireAllClients(hid, pData.Honeycomb) 
-	eventsModule.EquipCollector:FireClient(p, pData.EquippedCollector or "Scooper") 
-	eventsModule.EquipBackpack:FireClient(p, pData.EquippedBackpack or "Pouch") 
-	eventsModule.ServerItemPackEvent:FireClient(p, "HiveInitReady", {HiveId = hid, Data = pData.Honeycomb}) 
-end)
-return true
+function DataService:CreateNewSave(plr)
+	local newSave = Utils.ShadowCopy(DefaultPlayerData)
+	DataService:SetPlayerData(plr, newSave)
 end
-print("📍 [LINE 270] Подключаем триггер PlayerRemoving...")
-Players.PlayerRemoving:Connect(function(p)
-	local d = cache[p] if d and type(d) == "table" then pcall(function() if DS and DS.WaitUntilSave then DS.WaitUntilSave("BSS_Alpha_Save_v3", p.UserId, d) end end) end
-	cache[p] = nil if hivesCache[p] then hivesCache[p] = nil end
-end)
 
-print("📍 [LINE 276] Пробиваем подстраховку существующих игроков...")
-for _, p in ipairs(Players:GetPlayers()) do task.spawn(function() initPlayer(p) end) end
+function DataService:SavePlayerData(plr)
+	if not script:FindFirstChild(plr.Name) == nil then return end
+	local PlayerData = require(script[plr.Name]).Data
 
-print("📍 [LINE 279] Финальный маркер версии в Workspace...")
-pcall(function() if not workspace:FindFirstChild("ServerVersion") then local sv = Instance.new("StringValue") sv.Name = "ServerVersion" sv.Value = "621" sv.Parent = workspace end end)
+	if not rawget(PlayerData,"DATA_UPDATE_COUNT") then
+		PlayerData["DATA_UPDATE_COUNT"] = 0
+	end
 
-print("👑 [SERVER CORE MASTER LIVE] Полноценное каноничное ядро успешно запущено с LINE-RADAR!")
+	PlayerData["DATA_UPDATE_COUNT"] = PlayerData["DATA_UPDATE_COUNT"] + 1
+
+	DS:SetAsync(plr.UserId, PlayerData)
 end
+
+function DataService:AddPet(plr,petName,shiny,darkmatter)
+	local plrData = DataService:GetPlayerData(plr)
+	local petData = {
+		[1] = game:GetService("HttpService"):GenerateGUID(false),
+		[2] = petName,
+		[3] = petName,
+		[4] = 1,
+		[5] = 0,
+		[6] = false,
+		[7] = false,
+		[8] = shiny,
+		[9] = 0,
+		[10] = darkmatter,
+	}
+	table.insert(plrData["PETS"],petData)
+	DataService:SetPlayerData(plr,plrData["PETS"],"PETS")
+end
+
+function DataService:AddAllGamepasses_Reward(plrID)
+	local plrData = DS:GetAsync(plrID)
+	if not plrData then return end
+
+	if not plrData["ClaimedRewards"] then
+		plrData["ClaimedRewards"] = {}
+	end
+
+	if table.find(plrData["ClaimedRewards"],"AllGamepasses") then
+		return
+	end
+
+	table.insert(plrData["ClaimedRewards"], "AllGamepasses")
+
+	plrData["AllGamepasses"] = true
+
+	DS:SetAsync(plrID,plrData)
+end
+
+function DataService:AddPet_Reward(plrID, PetName, Shiny, Darkmatter)
+	local plrData = DS:GetAsync(plrID)
+	if not plrData then return end
+
+	if not plrData["ClaimedRewards"] then
+		plrData["ClaimedRewards"] = {}
+	end
+
+	if table.find(plrData["ClaimedRewards"],string.format("Add_Pet_%s_%s_%s", tostring(PetName), tostring(Shiny), tostring(Darkmatter))) then
+		return
+	end
+
+	table.insert(plrData["ClaimedRewards"], string.format("Add_Pet_%s_%s_%s", tostring(PetName), tostring(Shiny), tostring(Darkmatter)))
+
+	local petData = {
+		[1] = game:GetService("HttpService"):GenerateGUID(false),
+		[2] = PetName,
+		[3] = PetName,
+		[4] = 1,
+		[5] = 0,
+		[6] = false,
+		[7] = false,
+		[8] = Shiny,
+		[9] = 0,
+		[10] = Darkmatter,
+	}
+
+	table.insert(plrData["PETS"],petData)
+
+	DS:SetAsync(plrID,plrData)
+end
+
+function DataService:AddAllBoosts_Reward(plrID,t)
+	local BoostModule = require(game.ReplicatedStorage.Assets.Modules.ItemDataService.BoostModule)
+	local plrData = DS:GetAsync(plrID)
+
+	if not plrData then return end
+
+	if not plrData["ClaimedRewards"] then
+		plrData["ClaimedRewards"] = {}
+	end
+
+	if table.find(plrData["ClaimedRewards"],string.format("AllBoosts_%s",tostring(t))) then
+		return
+	end
+
+	table.insert(plrData["ClaimedRewards"], string.format("AllBoosts_%s",tostring(t)))
+	for i,v in pairs(BoostModule) do
+		if plrData["BOOSTS"][i] then
+			plrData["BOOSTS"][i] = {i,plrData["BOOSTS"][i][2]+t,plrData["BOOSTS"][i][3]+t}
+		else
+			plrData["BOOSTS"][i] = {i,t,t}
+		end
+	end
+
+	DS:SetAsync(plrID,plrData)
+end
+
+function DataService:AddCurrency(plr,currency,value)
+	local plr = game.Players.VoncreDev
+	local plrData = DataService:GetPlayerData(plr)
+	plrData[currency] = value
+	DataService:SetPlayerData(plr,plrData)
+end
+
+function DataService:AddAllBoosts(plr,t)
+	local BoostModule = require(game.ReplicatedStorage.Assets.Modules.ItemDataService.BoostModule)
+	local plrData = DataService:GetPlayerData(plr)
+
+	plrData["BOOSTS"] = {}
+	for i,v in pairs(BoostModule) do
+		table.insert(plrData["BOOSTS"],{i,t,t})
+	end
+
+	DataService:SetPlayerData(plr,plrData["BOOSTS"],"BOOSTS")
+end
+
+function DataService:ResetData(plr,index)
+	DataService:SetPlayerData(plr,DefaultPlayerData[index],index)
+end
+
+function DataService:RemovePlayer(plr)
+	if script:FindFirstChild(plr.Name) then
+		script[plr.Name]:Destroy()
+	end
+end
+
+return DataService
