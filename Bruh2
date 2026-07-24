@@ -1,142 +1,164 @@
-local Kavo = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
-local window = Kavo.CreateLib("BGS PRO SCRIPT (Optimized)", "DarkTheme")
+-- === AI BUBBLE GUM ELITE (FULL & FIXED & ULTRA OPTIMIZED) ===
+-- ССЫЛКА НА МЕСТЕ (ZanoLeafVN):
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
+local Window = Library.CreateLib("AI BUBBLE GUM ELITE", "Midnight")
 
--- РАЗДЕЛЫ И ВКЛАДКИ (Полное сохранение вашей структуры)
-local mainTab = window:NewTab("Авто-Фарм")
-local eggTab = window:NewTab("Яйца")
+-- === ИНИЦИАЛИЗАЦИЯ ===
+local rs = game:GetService("ReplicatedStorage")
+local lp = game.Players.LocalPlayer
+local REMOTE = rs:FindFirstChild("NetworkRemoteEvent") or rs:FindFirstChild("RemoteEvent")
+local EGGS_PATH = rs:FindFirstChild("Assets") and rs.Assets:FindFirstChild("Eggs") or rs:FindFirstChild("Eggs")
+local PICKUPS = workspace:FindFirstChild("Pickups")
 
-local farmSection = mainTab:NewSection("Сбор Ресурсов")
-local eggSection = eggTab:NewSection("Макрос Открытия")
+-- Ивент ответа сервера об открытии яйца (для оптимизации Fast Hatch)
+local openEggEvent = rs:FindFirstChild("OpenEgg")
 
--- СЕРВИСЫ
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
-local localPlayer = Players.LocalPlayer
-
--- РЕМОЙТЫ И ИВЕНТЫ БГС
-local networkRemote = ReplicatedStorage:FindFirstChild("Network") or ReplicatedStorage:FindFirstChild("Remotes")
-local openEggEvent = ReplicatedStorage:FindFirstChild("OpenEgg")
-
--- ГЛОБАЛЬНЫЕ НАСТРОЙКИ (Ваши оригинальные флаги)
-_G.coins = false
-_G.gems = false
-_G.blocks = false
-_G.hatch = false
-
--- Настройки для яиц
-_G.selectedEgg = "Common Egg"
-_G.hatchMode = "Multi" -- По умолчанию "Multi" (Open 3) из логов ИИ
-
--- ========================================================
--- [МЕХАНИКА 1: СБОР РЕСУРСОВ] (Полное сохранение вашей логики)
--- ========================================================
-
--- Фоновый поток для сбора монет
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if _G.coins and Workspace:FindFirstChild("Coins") then
-            for _, coin in pairs(Workspace.Coins:GetChildren()) do
-                if coin:IsA("BasePart") and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    coin.CFrame = localPlayer.Character.HumanoidRootPart.CFrame
+-- === ФУНКЦИЯ СТИЛЯ (КОТ + СТЕКЛО) ===
+local function ApplyCustomStyle(id)
+    local coreGui = game:GetService("CoreGui")
+    for _, gui in pairs(coreGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui:FindFirstChild("Main") then
+            local main = gui.Main
+            if main:FindFirstChild("CustomBG") then main.CustomBG:Destroy() end
+            local bg = Instance.new("ImageLabel", main)
+            bg.Name = "CustomBG"
+            bg.Size = UDim2.new(1, 0, 1, 0)
+            bg.ZIndex = 0
+            bg.BackgroundTransparency = 1
+            bg.Image = "rbxassetid://" .. id
+            bg.ImageTransparency = 0.2
+            bg.ScaleType = Enum.ScaleType.Stretch
+            Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 10)
+            
+            for _, child in pairs(main:GetDescendants()) do
+                if child:IsA("Frame") or child:IsA("ScrollingFrame") then
+                    child.BackgroundTransparency = 0.8
+                    child.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+                elseif child:IsA("TextButton") then
+                    if not child:FindFirstChild("UICorner") then Instance.new("UICorner", child).CornerRadius = UDim.new(0, 6) end
+                    child.BackgroundTransparency = 0.5
+                    child.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+                    child.TextColor3 = Color3.fromRGB(255, 255, 255)
                 end
             end
         end
-    end
-end)
-
--- Фоновый поток для сбора кристаллов
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if _G.gems and Workspace:FindFirstChild("Gems") then
-            for _, gem in pairs(Workspace.Gems:GetChildren()) do
-                if gem:IsA("BasePart") and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    gem.CFrame = localPlayer.Character.HumanoidRootPart.CFrame
-                end
-            end
-        end
-    end
-end)
-
--- Фоновый поток для сбора блоков
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if _G.blocks and Workspace:FindFirstChild("Blocks") then
-            for _, block in pairs(Workspace.Blocks:GetChildren()) do
-                if block:IsA("BasePart") and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    block.CFrame = localPlayer.Character.HumanoidRootPart.CFrame
-                end
-            end
-        end
-    end
-end)
-
--- ========================================================
--- [МЕХАНИКА 2: УЛЬТРА-СКОРОСТНОЕ ОТКРЫТИЕ ЯИЦ] (Оптимизация)
--- ========================================================
-
--- Базовая функция отправки запроса
-local function sendHatchRequest()
-    if _G.hatch and networkRemote then
-        -- Шлем точные аргументы, которые ждет сервер BGS
-        networkRemote:FireServer("PurchaseEgg", _G.selectedEgg, _G.hatchMode)
     end
 end
 
--- Умный перехватчик: ловим системный сигнал об открытии яйца
+-- === ВКЛАДКИ ===
+local Main = Window:NewTab("Main 🏠")
+local Eggs = Window:NewTab("Eggs 🥚")
+local Hack = Window:NewTab("Hacks ⚡")
+local Settings = Window:NewTab("Settings ⚙️")
+
+-- === ЗАПОЛНЯЕМ SETTINGS (ВЕРНУЛ СМЕНУ ID) ===
+local BgSection = Settings:NewSection("Кастомизация")
+BgSection:NewTextBox("Сменить ID Фона", "Вставь ID и жми Enter", function(txt)
+    local id = tonumber(txt)
+    if id then ApplyCustomStyle(id) end
+end)
+
+-- === ЗАПОЛНЯЕМ MAIN ===
+local MainSection = Main:NewSection("Автоматизация")
+local autoCollect = false
+MainSection:NewToggle("Auto Collect (Pickups)", "Притягивает монеты", function(state)
+    autoCollect = state
+    task.spawn(function()
+        while autoCollect do
+            if PICKUPS then
+                for _, item in pairs(PICKUPS:GetChildren()) do
+                    if item:IsA("BasePart") and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+                        item.CFrame = lp.Character.HumanoidRootPart.CFrame
+                    end
+                end
+            end
+            task.wait(0.5)
+        end
+    end)
+end)
+
+MainSection:NewSlider("WalkSpeed", "Скорость бега", 500, 16, function(s)
+    if lp.Character and lp.Character:FindFirstChild("Humanoid") then
+        lp.Character.Humanoid.WalkSpeed = s
+    end
+end)
+
+-- === ВЗЛОМ ===
+local HackSection = Hack:NewSection("Взлом геймпассов")
+HackSection:NewButton("Unlock All Passes", "Активация через Upvalues", function()
+    local count = 0
+    for _, f in pairs(getgc()) do
+        if type(f) == "function" and islclosure(f) then
+            local upvals = debug.getupvalues(f)
+            for i, v in pairs(upvals) do
+                if type(v) == "table" and (rawget(v, "Quantum Gum") ~= nil or rawget(v, "+500 Slots") ~= nil) then
+                    for pName, val in pairs(v) do if type(val) == "boolean" then v[pName] = true count = count + 1 end end
+                    debug.setupvalue(f, i, v)
+                end
+            end
+        end
+    end
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "AI: Успех", Text = "Включено: "..tostring(count), Duration = 5})
+end)
+
+-- === ЯЙЦА (ОПТИМИЗИРОВАНО) ===
+local EggSection = Eggs:NewSection("Открытие")
+local eggNames = {}
+if EGGS_PATH then for _, e in pairs(EGGS_PATH:GetChildren()) do table.insert(eggNames, e.Name) end table.sort(eggNames) end
+local selectedEgg, hatchType = "", "Single"
+
+EggSection:NewDropdown("Выберите яйцо", "Список A-Z", eggNames, function(c) selectedEgg = c end)
+EggSection:NewDropdown("Тип", "Single / Multi", {"Single", "Multi"}, function(c) hatchType = c end)
+
+-- Изолированная ультра-быстрая функция выстрела
+local autoHatch = false
+local function sendHatchRequest()
+    if autoHatch and selectedEgg ~= "" and REMOTE then
+        REMOTE:FireServer("PurchaseEgg", selectedEgg, hatchType)
+    end
+end
+
+-- Реактивный перехватчик: как только сервер прислал ивент OpenEgg, мгновенно шлем следующий клик!
 if openEggEvent and openEggEvent:IsA("RemoteEvent") then
     openEggEvent.OnClientEvent:Connect(function()
-        -- Как только сервер закончил просчет и прислал ответ — шлем следующий запрос МГНОВЕННО,
-        -- не дожидаясь окончания тяжелых анимаций HatchEgg (линия 616) на клиенте!
-        if _G.hatch then
+        if autoHatch then
             sendHatchRequest()
         end
     end)
 end
 
--- ========================================================
--- [ИНТЕРФЕЙС KAVO UI] (Полное сохранение структуры ваших кнопок)
--- ========================================================
-
--- Вкладка авто-фарма ресурсов
-farmSection:NewToggle("Сбор Монет", "Автоматически притягивает монеты к персонажу", function(state)
-    _G.coins = state
-end)
-
-farmSection:NewToggle("Сбор Кристаллов", "Автоматически притягивает гемы к персонажу", function(state)
-    _G.gems = state
-end)
-
-farmSection:NewToggle("Сбор Блоков", "Автоматически притягивает спавнящиеся блоки", function(state)
-    _G.blocks = state
-end)
-
--- Вкладка управления яйцами
-eggSection:NewTextBox("Название Яйца", "Введите точное имя яйца (например: Spotted Egg)", function(text)
-    _G.selectedEgg = text
-end)
-
-eggSection:NewDropdown("Тип открытия", "Выберите количество открываемых за раз яиц", {"Single", "Multi"}, function(currentOption)
-    _G.hatchMode = currentOption
-end)
-
-eggSection:NewToggle("Авто-Открытие Яиц (Умный Скорострел)", "Оптимизировано под серверные тайминги без спама", function(state)
-    _G.hatch = state
-    if state then
-        -- Первичный толчок очереди
+EggSection:NewToggle("Auto Hatch", "Старт", function(s)
+    autoHatch = s
+    if s then
+        -- Первичный пинок очереди
         sendHatchRequest()
         
-        -- Безопасный фоновый поток (Защита от потери сетевых пакетов)
+        -- Умный фоновый поток (Защита от потери сетевых пакетов)
         task.spawn(function()
-            while _G.hatch do
-                task.wait(1.2) -- Если за 1.2 сек серверный ивент не вернулся, подталкиваем цикл заново
-                if _G.hatch then
+            while autoHatch do
+                task.wait(1.3) -- Если за 1.3 сек серверный ивент не вернулся из-за лага пинга, подталкиваем цикл
+                if autoHatch then
                     sendHatchRequest()
                 end
             end
         end)
     end
 end)
+
+-- === ПЛАВАЮЩАЯ КНОПКА ===
+local OpenBtnGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+OpenBtnGui.Name = "AI_Draggable_UI"
+local Btn = Instance.new("TextButton", OpenBtnGui)
+Btn.Size = UDim2.new(0, 50, 0, 50)
+Btn.Position = UDim2.new(0, 10, 0.2, 0)
+Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+Btn.Text = "AI"
+Btn.TextColor3 = Color3.new(1,1,1)
+Btn.Font = Enum.Font.GothamBold
+Btn.Active = true
+Btn.Draggable = true
+Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
+Btn.MouseButton1Click:Connect(function() Library:ToggleUI() end)
+
+-- Авто-запуск стиля (Кот по умолчанию)
+task.spawn(function() task.wait(1.5) ApplyCustomStyle(8932053668) end)
