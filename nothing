@@ -1,7 +1,7 @@
--- === AI BUBBLE GUM ELITE (DUAL METHOD HACK & VISUAL EFFECTS) ===
+-- === AI BUBBLE GUM ELITE (HYBRID PC/MOBILE COMPATIBLE) ===
 -- ССЫЛКА НА МЕСТЕ (ZanoLeafVN):
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
-local Window = Library.CreateLib("AI BUBBLE GUM ELITE (GOD)", "Midnight")
+local Window = Library.CreateLib("AI BUBBLE GUM ELITE (HYBRID)", "Midnight")
 
 -- === ИНИЦИАЛИЗАЦИЯ ===
 local rs = game:GetService("ReplicatedStorage")
@@ -17,7 +17,6 @@ local PICKUPS = workspace:FindFirstChild("Pickups")
 local autoHatch = false
 local selectedEgg, hatchType = "", "Single"
 local serverDebounceTime = 0.8 
-local serverSpoofActive = false
 
 -- === ХАКЕРСКИЙ ПЕРЕХВАТЧИК СЕРВЕРНОЙ ПАУЗЫ ===
 if REMOTE_FUNC and REMOTE_FUNC:IsA("RemoteFunction") then
@@ -101,35 +100,27 @@ MainSection:NewSlider("WalkSpeed", "Скорость бега", 500, 16, functio
 end)
 
 -- === ВЗЛОМ ===
-local HackSection = Hack:NewSection("Троллинг и Обходы")
+local HackSection = Hack:NewSection("Серверный и Локальный Взлом")
 
--- Новая функция: Взлом через подмену сетевых аргументов для сервера
-HackSection:NewToggle("Server Pass Spoof (Network)", "Серверный обход пассов", function(state)
-    serverSpoofActive = state
-    if state then
-        game:GetService("StarterGui"):SetCore("SendNotification", {Title = "AI Hack", Text = "Сетевой спуфинг активирован!", Duration = 3})
+-- МЕТОД 1 (НОВЫЙ): Серверный инжект через Remote для ПК/Ноутбуков (Без зависаний)
+HackSection:NewButton("Unlock Passes (Server Inject)", "Инжект пассов напрямую на сервер", function()
+    if REMOTE_FUNC then
+        local fakeData = {
+            ["Fast Hatch"] = true,
+            ["Quantum Gum"] = true,
+            ["+500 Slots"] = true,
+            ["Auto Egg"] = true,
+            ["Multi Egg"] = true
+        }
+        pcall(function()
+            REMOTE_FUNC:InvokeServer("UpdateDataField", "Passes", fakeData)
+        end)
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title = "AI Injector", Text = "Пакет пассов отправлен на сервер!", Duration = 5})
     end
 end)
 
-HackSection:NewButton("Fake Secret Drop", "Фейк сообщение в чат о секретке", function()
-    if REMOTE_EVENT then
-        REMOTE_EVENT:FireServer("DisplayLegendaryInChat", "SECRET OVERLORD PET", true)
-    end
-end)
-
-HackSection:NewButton("Become Shiny (Visual)", "Включить золотое свечение", function()
-    if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
-        local attachment = Instance.new("Attachment", lp.Character.HumanoidRootPart)
-        local particles = Instance.new("ParticleEmitter", attachment)
-        particles.Texture = "rbxassetid://258129511"
-        particles.LightEmission = 1
-        particles.Color = ColorSequence.new(Color3.fromRGB(255, 215, 0))
-        particles.Rate = 50
-        particles.Speed = NumberRange.new(2, 5)
-    end
-end)
-
-HackSection:NewButton("Unlock Passes (Upvalues)", "Локальный взлом геймпассов", function()
+-- МЕТОД 2 (СТАРЫЙ): Локальный взлом через Upvalues (Для мобилок)
+HackSection:NewButton("Unlock Passes (Upvalues)", "Локальный взлом (getgc метод)", function()
     local count = 0
     for _, f in pairs(getgc()) do
         if type(f) == "function" and islclosure(f) then
@@ -145,6 +136,30 @@ HackSection:NewButton("Unlock Passes (Upvalues)", "Локальный взлом
     game:GetService("StarterGui"):SetCore("SendNotification", {Title = "AI: Успех", Text = "Включено локально: "..tostring(count), Duration = 5})
 end)
 
+HackSection:NewButton("Fake Secret Drop", "Фейк сообщение в чат о секретке", function()
+    if REMOTE_EVENT then
+        REMOTE_EVENT:FireServer("DisplayLegendaryInChat", "SECRET OVERLORD PET", true)
+    end
+end)
+
+HackSection:NewButton("Become Shiny (Visual Fix)", "Включить неоновое Шайни-свечение", function()
+    if lp.Character then
+        for _, part in pairs(lp.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                local box = Instance.new("SelectionBox")
+                box.Adornee = part
+                box.Color3 = Color3.fromRGB(255, 215, 0)
+                box.LineThickness = 0.05
+                box.Parent = part
+                
+                local aura = Instance.new("ForceField")
+                aura.Visible = true
+                aura.Parent = lp.Character
+            end
+        end
+    end
+end)
+
 -- === ЯЙЦА ===
 local EggSection = Eggs:NewSection("Открытие")
 local eggNames = {}
@@ -153,19 +168,10 @@ if EGGS_PATH then for _, e in pairs(EGGS_PATH:GetChildren()) do table.insert(egg
 EggSection:NewDropdown("Выберите яйцо", "Список A-Z", eggNames, function(c) selectedEgg = c end)
 EggSection:NewDropdown("Тип", "Single / Multi", {"Single", "Multi"}, function(c) hatchType = c end)
 
--- Измененная функция отправки: если включен сетевой спуфинг, шлем серверу админ-таблицу пассов
 local function packetSpamHatch()
     if autoHatch and selectedEgg ~= "" and REMOTE_EVENT then
-        if serverSpoofActive then
-            -- Передаем кастомную таблицу, которую сервер фанмейда может принять за админскую
-            local fakePasses = {["Fast Hatch"] = true, ["Auto Egg"] = true, ["Multi Egg"] = true}
-            REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType, fakePasses, true)
-            REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType, fakePasses, true)
-        else
-            -- Стандартный пакетный выстрел
-            REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
-            REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
-        end
+        REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
+        REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
     end
 end
 
@@ -175,7 +181,7 @@ EggSection:NewToggle("Auto Hatch", "Старт", function(s)
         task.spawn(function()
             while autoHatch do
                 packetSpamHatch()
-                task.wait(0.03) 
+                task.wait(0.04) 
             end
         end)
     end
