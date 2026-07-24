@@ -1,46 +1,25 @@
--- === AI BUBBLE GUM ELITE (FULL & FIXED) ===
+-- === AI BUBBLE GUM ELITE (CONSOLE & LOGS UPDATE) ===
 -- ССЫЛКА НА МЕСТЕ (ZanoLeafVN):
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
-local Window = Library.CreateLib("AI BUBBLE GUM ELITE", "Midnight")
+local Library = loadstring(game:HttpGet("https://githubusercontent.com"))()
+local Window = Library.CreateLib("AI BUBBLE GUM ELITE (CONSOLE)", "Midnight")
 
 -- === ИНИЦИАЛИЗАЦИЯ ===
 local rs = game:GetService("ReplicatedStorage")
 local lp = game.Players.LocalPlayer
-local REMOTE = rs:FindFirstChild("NetworkRemoteEvent") or rs:FindFirstChild("RemoteEvent")
+local LogService = game:GetService("LogService")
+
+local REMOTE_EVENT = rs:FindFirstChild("NetworkRemoteEvent") or rs:FindFirstChild("RemoteEvent")
+local REMOTE_FUNC = rs:FindFirstChild("NetworkRemoteFunction") or rs:FindFirstChild("RemoteFunction")
+
 local EGGS_PATH = rs:FindFirstChild("Assets") and rs.Assets:FindFirstChild("Eggs") or rs:FindFirstChild("Eggs")
 local PICKUPS = workspace:FindFirstChild("Pickups")
 
--- === ФУНКЦИЯ СТИЛЯ (КОТ + СТЕКЛО) ===
-local function ApplyCustomStyle(id)
-    local coreGui = game:GetService("CoreGui")
-    for _, gui in pairs(coreGui:GetChildren()) do
-        if gui:IsA("ScreenGui") and gui:FindFirstChild("Main") then
-            local main = gui.Main
-            if main:FindFirstChild("CustomBG") then main.CustomBG:Destroy() end
-            local bg = Instance.new("ImageLabel", main)
-            bg.Name = "CustomBG"
-            bg.Size = UDim2.new(1, 0, 1, 0)
-            bg.ZIndex = 0
-            bg.BackgroundTransparency = 1
-            bg.Image = "rbxassetid://" .. id
-            bg.ImageTransparency = 0.2
-            bg.ScaleType = Enum.ScaleType.Stretch
-            Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 10)
-            
-            for _, child in pairs(main:GetDescendants()) do
-                if child:IsA("Frame") or child:IsA("ScrollingFrame") then
-                    child.BackgroundTransparency = 0.8
-                    child.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-                elseif child:IsA("TextButton") then
-                    if not child:FindFirstChild("UICorner") then Instance.new("UICorner", child).CornerRadius = UDim.new(0, 6) end
-                    child.BackgroundTransparency = 0.5
-                    child.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-                    child.TextColor3 = Color3.fromRGB(255, 255, 255)
-                end
-            end
-        end
-    end
-end
+-- Настройки
+local autoHatch = false
+local selectedEgg, hatchType = "", "Single"
+local serverDebounceTime = 0.8 
+local bypass3DRender = false
+local instantSkipUI = false
 
 -- === ВКЛАДКИ ===
 local Main = Window:NewTab("Main 🏠")
@@ -48,8 +27,96 @@ local Eggs = Window:NewTab("Eggs 🥚")
 local Hack = Window:NewTab("Hacks ⚡")
 local Settings = Window:NewTab("Settings ⚙️")
 
--- === ЗАПОЛНЯЕМ SETTINGS (ВЕРНУЛ СМЕНУ ID) ===
+-- === СЕКЦИИ НАСТРОЕК (КОНСОЛЬ И ЛОГИ СЮДА) ===
 local BgSection = Settings:NewSection("Кастомизация")
+local ConsoleSection = Settings:NewSection("Roblox Log Console (F9 Fix)")
+local ScriptLogSection = Settings:NewSection("Script Activity Logs")
+
+-- Создаем интерактивные ярлыки для вывода текста
+local robloxConsoleLabel = ConsoleSection:NewLabel("Консоль запущена. Ожидание системных логов...")
+local scriptActivityLabel = ScriptLogSection:NewLabel("Лог скрипта: Ожидание старта...")
+
+-- Хакерский перехватчик системной консоли Roblox (Перенаправляем логи в меню)
+task.spawn(function()
+    LogService.MessageOut:Connect(function(message, messageType)
+        -- Превращаем тип сообщения в красивый текст
+        local msgTypeStr = "[INFO]"
+        if messageType == Enum.MessageType.MessageError then
+            msgTypeStr = "[⛔ ERROR]"
+        elseif messageType == Enum.MessageType.MessageWarning then
+            msgTypeStr = "[⚠️ WARN]"
+        end
+        -- Обновляем текст в нашей встроенной консоли (показываем последние 60 символов для компактности)
+        local cleanMsg = message:sub(1, 55)
+        robloxConsoleLabel:UpdateLabel(msgTypeStr .. " " .. cleanMsg)
+    end)
+end)
+
+-- Функция для добавления логов самого скрипта
+local function logScript(text)
+    local osTime = os.date("%X") -- Берем текущее время на ноутбуке
+    scriptActivityLabel:UpdateLabel("[" .. osTime .. "] " .. text)
+end
+
+-- === СЕТЕВОЙ ФИЛЬТР ЛЕГЕНДАРОК ===
+if REMOTE_EVENT and REMOTE_EVENT:IsA("RemoteEvent") then
+    REMOTE_EVENT.OnClientEvent:Connect(function(action, ...)
+        if autoHatch and (action == "DisplayLegendaryInChat" or action == "DisplayLegendaryHatInChat") then
+            return 
+        end
+    end)
+end
+
+-- === ХАКЕРСКИЙ ПЕРЕХВАТЧИК СЕРВЕРНОЙ ПАУЗЫ ===
+if REMOTE_FUNC and REMOTE_FUNC:IsA("RemoteFunction") then
+    REMOTE_FUNC.OnClientInvoke = function(action, ...)
+        if action == "DataChanged" and autoHatch then
+            task.wait(serverDebounceTime)
+            logScript("Сервер заморожен через InvokeClient (DataChanged)")
+            return true
+        end
+        return true
+    end
+end
+
+-- === ХУК ГРАФИКИ И АВТО-СКИПА ===
+task.spawn(function()
+    local eggServiceModule = rs.Assets.Modules:FindFirstChild("EggService")
+    if eggServiceModule then
+        local eggService = require(eggServiceModule)
+        local oldHatchEgg = eggService.HatchEgg
+        local oldMultiHatchEgg = eggService.MultiHatchEgg
+        
+        eggService.HatchEgg = function(...)
+            if bypass3DRender and autoHatch then return end
+            return oldHatchEgg(...)
+        end
+        
+        eggService.MultiHatchEgg = function(...)
+            if bypass3DRender and autoHatch then return end
+            return oldMultiHatchEgg(...)
+        end
+    end
+    
+    game:GetService("CoreGui").ChildAdded:Connect(function(child)
+        if instantSkipUI and child.Name == "AI_Draggable_UI" then return end
+        if instantSkipUI and lp.PlayerGui:FindFirstChild("ScreenGui") then
+            local screenGui = lp.PlayerGui.ScreenGui
+            local petHatch = screenGui:FindFirstChild("PetHatch") or screenGui:FindFirstChild("MultiPetHatch")
+            if petHatch and petHatch:FindFirstChild("Skip") then
+                pcall(function()
+                    local skipBtn = petHatch.Skip
+                    if skipBtn.Visible then
+                        for _, c in pairs(getconnections(skipBtn.MouseButton1Down)) do c:Fire() end
+                        logScript("Анимация яйца успешно пропущена (Instant Skip)")
+                    end
+                end)
+            end
+        end
+    end)
+end)
+
+-- === ЗАПОЛНЯЕМ SETTINGS ===
 BgSection:NewTextBox("Сменить ID Фона", "Вставь ID и жми Enter", function(txt)
     local id = tonumber(txt)
     if id then ApplyCustomStyle(id) end
@@ -81,52 +148,110 @@ MainSection:NewSlider("WalkSpeed", "Скорость бега", 500, 16, functio
 end)
 
 -- === ВЗЛОМ ===
-local HackSection = Hack:NewSection("Взлом геймпассов")
-HackSection:NewButton("Unlock All Passes", "Активация через Upvalues", function()
-    local count = 0
+local HackSection = Hack:NewSection("Визуальные Хэки и Троллинг")
+
+HackSection:NewToggle("Factory Shiny Mode", "Оригинальный золотой перелив BGS", function(state)
+    if state and lp.Character then
+        pcall(function() require(rs.Assets.Modules.Services):GetService("Library")("ShinyModifier"):Modify(lp.Character) end)
+        logScript("Factory Shiny наложен на персонажа")
+    else
+        if lp.Character then
+            for _, v in pairs(lp.Character:GetDescendants()) do
+                if v:IsA("Highlight") or v.Name == "ShinyGlow" then v:Destroy() end
+            end
+        end
+    end
+end)
+
+HackSection:NewButton("Emit Legendary Particles", "Заспавнить искры легендарок на себе", function()
+    pcall(function()
+        local effectsFolder = rs.Assets:FindFirstChild("LegendaryEffects")
+        if effectsFolder and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+            for _, effect in pairs(effectsFolder:GetChildren()) do
+                local clone = effect:Clone()
+                clone.Parent = lp.Character.HumanoidRootPart
+                clone:Emit(30)
+                game:GetService("Debris"):AddItem(clone, 3)
+            end
+            logScript("Эффект Legendary Particles активирован!")
+        end
+    end)
+end)
+
+local soundSpam = false
+HackSection:NewToggle("Sound Spam (Special Unlock)", "Спамить звуком секретки", function(state)
+    soundSpam = state
+    task.spawn(function()
+        while soundSpam do
+            pcall(function()
+                local sound = rs.Assets.Sounds:FindFirstChild("Special_Unlock")
+                if sound then sound:Play() end
+            end)
+            task.wait(0.1)
+        end
+    end)
+end)
+
+HackSection:NewButton("Fake Secret Drop", "Фейк сообщение в чат о секретке", function()
+    if REMOTE_EVENT then
+        REMOTE_EVENT:FireServer("DisplayLegendaryInChat", "SECRET OVERLORD PET", true)
+        logScript("Отправлен пакет фейкового дропа в глобальный чат")
+    end
+end)
+
+HackSection:NewButton("Unlock Passes (Upvalues)", "Локальный взлом (getgc метод)", function()
     for _, f in pairs(getgc()) do
         if type(f) == "function" and islclosure(f) then
             local upvals = debug.getupvalues(f)
             for i, v in pairs(upvals) do
                 if type(v) == "table" and (rawget(v, "Quantum Gum") ~= nil or rawget(v, "+500 Slots") ~= nil) then
-                    for pName, val in pairs(v) do if type(val) == "boolean" then v[pName] = true count = count + 1 end end
+                    for pName, val in pairs(v) do if type(val) == "boolean" then v[pName] = true end end
                     debug.setupvalue(f, i, v)
                 end
             end
         end
     end
-    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "AI: Успех", Text = "Включено: "..tostring(count), Duration = 5})
+    logScript("Локальные геймпассы успешно взломаны через Upvalues")
 end)
 
 -- === ЯЙЦА ===
 local EggSection = Eggs:NewSection("Открытие")
 local eggNames = {}
 if EGGS_PATH then for _, e in pairs(EGGS_PATH:GetChildren()) do table.insert(eggNames, e.Name) end table.sort(eggNames) end
-local selectedEgg, hatchType = "", "Single"
 
 EggSection:NewDropdown("Выберите яйцо", "Список A-Z", eggNames, function(c) selectedEgg = c end)
 EggSection:NewDropdown("Тип", "Single / Multi", {"Single", "Multi"}, function(c) hatchType = c end)
 
-local autoHatch = false
-EggSection:NewToggle("Auto Hatch", "Старт", function(s)
-    autoHatch = s
-    spawn(function() while autoHatch do if selectedEgg ~= "" and REMOTE then REMOTE:FireServer("PurchaseEgg", selectedEgg, hatchType) end task.wait(0.1) end end)
+EggSection:NewToggle("Fast 3D-Bypass (No Render)", "Отключить 3D яйца для скорости", function(state)
+    bypass3DRender = state
+    logScript("Статус 3D-Bypass изменен на: " .. tostring(state))
 end)
 
--- === ПЛАВАЮЩАЯ КНОПКА ===
-local OpenBtnGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
-OpenBtnGui.Name = "AI_Draggable_UI"
-local Btn = Instance.new("TextButton", OpenBtnGui)
-Btn.Size = UDim2.new(0, 50, 0, 50)
-Btn.Position = UDim2.new(0, 10, 0.2, 0)
-Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
-Btn.Text = "AI"
-Btn.TextColor3 = Color3.new(1,1,1)
-Btn.Font = Enum.Font.GothamBold
-Btn.Active = true
-Btn.Draggable = true
-Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
-Btn.MouseButton1Click:Connect(function() Library:ToggleUI() end)
+EggSection:NewToggle("Instant Skip UI (Visual Hack)", "Мгновенный авто-пропуск заставки", function(state)
+    instantSkipUI = state
+    logScript("Статус Instant Skip изменен на: " .. tostring(state))
+end)
 
--- Авто-запуск стиля (Кот по умолчанию)
-task.spawn(function() task.wait(1.5) ApplyCustomStyle(8932053668) end)
+local function packetSpamHatch()
+    if autoHatch and selectedEgg ~= "" and REMOTE_EVENT then
+        REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
+        REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
+    end
+end
+
+EggSection:NewToggle("Auto Hatch", "Старт", function(s)
+    autoHatch = s
+    if s then
+        logScript("Запущен макрос авто-открытия яйца: " .. tostring(selectedEgg))
+        task.spawn(function()
+            while autoHatch do
+                packetSpamHatch()
+                task.wait(0.02) 
+            end
+        end)
+    else
+        logScript("Макрос авто-открытия остановлен.")
+    end
+end)
+
+-- === ФУНКЦИЯ СТИЛЯ ===function ApplyCustomStyle(id)local coreGui = game:GetService("CoreGui")for _, gui in pairs(coreGui:GetChildren()) doif gui:IsA("ScreenGui") and gui:FindFirstChild("Main") thenlocal main = gui.Mainif main:FindFirstChild("CustomBG") then main.CustomBG:Destroy() endlocal bg = Instance.new("ImageLabel", main)bg.Name = "CustomBG"bg.Size = UDim2.new(1, 0, 1, 0)bg.ZIndex = 0bg.BackgroundTransparency = 1bg.Image = "rbxassetid://" .. idbg.ImageTransparency = 0.2bg.ScaleType = Enum.ScaleType.StretchInstance.new("UICorner", bg).CornerRadius = UDim.new(0, 10)endendend-- === ПЛАВАЮЩАЯ КНОПКА ===local OpenBtnGui = Instance.new("ScreenGui", game:GetService("CoreGui"))OpenBtnGui.Name = "AI_Draggable_UI"local Btn = Instance.new("TextButton", OpenBtnGui)Btn.Size = UDim2.new(0, 50, 0, 50)Btn.Position = UDim2.new(0, 10, 0.2, 0)Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)Btn.Text = "AI"Btn.TextColor3 = Color3.new(1,1,1)Btn.Font = Enum.Font.GothamBoldBtn.Active = trueBtn.Draggable = trueInstance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)Btn.MouseButton1Click:Connect(function() Library:ToggleUI() end)task.spawn(function() task.wait(1.5) ApplyCustomStyle(8932053668) end)
