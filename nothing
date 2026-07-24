@@ -1,43 +1,36 @@
--- === AI BUBBLE GUM ELITE (FULL, FIXED & CALLBACK BYPASS) ===
+-- === AI BUBBLE GUM ELITE (DUAL METHOD HACK & VISUAL EFFECTS) ===
 -- ССЫЛКА НА МЕСТЕ (ZanoLeafVN):
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
-local Window = Library.CreateLib("AI BUBBLE GUM ELITE", "Midnight")
+local Window = Library.CreateLib("AI BUBBLE GUM ELITE (GOD)", "Midnight")
 
 -- === ИНИЦИАЛИЗАЦИЯ ===
 local rs = game:GetService("ReplicatedStorage")
 local lp = game.Players.LocalPlayer
 
--- Ремойты из оригинального серверного хендлера BGS
 local REMOTE_EVENT = rs:FindFirstChild("NetworkRemoteEvent") or rs:FindFirstChild("RemoteEvent")
 local REMOTE_FUNC = rs:FindFirstChild("NetworkRemoteFunction") or rs:FindFirstChild("RemoteFunction")
 
 local EGGS_PATH = rs:FindFirstChild("Assets") and rs.Assets:FindFirstChild("Eggs") or rs:FindFirstChild("Eggs")
 local PICKUPS = workspace:FindFirstChild("Pickups")
 
--- === НАСТРОЙКИ ОБХОДА СЕРВЕРА ===
+-- Настройки
 local autoHatch = false
 local selectedEgg, hatchType = "", "Single"
+local serverDebounceTime = 0.8 
+local serverSpoofActive = false
 
--- Время зависания сервера (с учетом взломанных пассов: 5.5 / 1.75 / 1.75 / 2 = ~0.9 сек)
-local serverDebounceTime = 0.9 
-
--- === ХАКЕРСКИЙ ПЕРЕХВАТЧИК СЕРВЕРНОЙ ПАУЗЫ (ИСПРАВЛЕННЫЙ) ===
+-- === ХАКЕРСКИЙ ПЕРЕХВАТЧИК СЕРВЕРНОЙ ПАУЗЫ ===
 if REMOTE_FUNC and REMOTE_FUNC:IsA("RemoteFunction") then
-    -- ВАЖНО: Больше НЕ считываем старый OnClientInvoke, чтобы движок Roblox не ругался!
-    
     REMOTE_FUNC.OnClientInvoke = function(action, ...)
         if action == "DataChanged" and autoHatch then
-            -- Ловим сервер на строчке InvokeClient! Заставляем его ждать, пока сгорит его дебаунс
-            task.wait(serverDebounceTime) 
-            return true -- Возвращаем серверу сигнал успеха, размораживая его поток
+            task.wait(serverDebounceTime)
+            return true
         end
-        
-        -- Для всех остальных системных вызовов возвращаем true, чтобы игра не зависала
         return true
     end
 end
 
--- === ФУНКЦИЯ СТИЛЯ (КОТ + СТЕКЛО) ===
+-- === ФУНКЦИЯ СТИЛЯ ===
 local function ApplyCustomStyle(id)
     local coreGui = game:GetService("CoreGui")
     for _, gui in pairs(coreGui:GetChildren()) do
@@ -75,7 +68,7 @@ local Eggs = Window:NewTab("Eggs 🥚")
 local Hack = Window:NewTab("Hacks ⚡")
 local Settings = Window:NewTab("Settings ⚙️")
 
--- === ЗАПОЛНЯЕМ SETTINGS ===
+-- === SETTINGS ===
 local BgSection = Settings:NewSection("Кастомизация")
 BgSection:NewTextBox("Сменить ID Фона", "Вставь ID и жми Enter", function(txt)
     local id = tonumber(txt)
@@ -108,8 +101,35 @@ MainSection:NewSlider("WalkSpeed", "Скорость бега", 500, 16, functio
 end)
 
 -- === ВЗЛОМ ===
-local HackSection = Hack:NewSection("Взлом геймпассов")
-HackSection:NewButton("Unlock All Passes", "Активация через Upvalues", function()
+local HackSection = Hack:NewSection("Троллинг и Обходы")
+
+-- Новая функция: Взлом через подмену сетевых аргументов для сервера
+HackSection:NewToggle("Server Pass Spoof (Network)", "Серверный обход пассов", function(state)
+    serverSpoofActive = state
+    if state then
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title = "AI Hack", Text = "Сетевой спуфинг активирован!", Duration = 3})
+    end
+end)
+
+HackSection:NewButton("Fake Secret Drop", "Фейк сообщение в чат о секретке", function()
+    if REMOTE_EVENT then
+        REMOTE_EVENT:FireServer("DisplayLegendaryInChat", "SECRET OVERLORD PET", true)
+    end
+end)
+
+HackSection:NewButton("Become Shiny (Visual)", "Включить золотое свечение", function()
+    if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+        local attachment = Instance.new("Attachment", lp.Character.HumanoidRootPart)
+        local particles = Instance.new("ParticleEmitter", attachment)
+        particles.Texture = "rbxassetid://258129511"
+        particles.LightEmission = 1
+        particles.Color = ColorSequence.new(Color3.fromRGB(255, 215, 0))
+        particles.Rate = 50
+        particles.Speed = NumberRange.new(2, 5)
+    end
+end)
+
+HackSection:NewButton("Unlock Passes (Upvalues)", "Локальный взлом геймпассов", function()
     local count = 0
     for _, f in pairs(getgc()) do
         if type(f) == "function" and islclosure(f) then
@@ -122,7 +142,7 @@ HackSection:NewButton("Unlock All Passes", "Активация через Upvalu
             end
         end
     end
-    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "AI: Успех", Text = "Включено: "..tostring(count), Duration = 5})
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title = "AI: Успех", Text = "Включено локально: "..tostring(count), Duration = 5})
 end)
 
 -- === ЯЙЦА ===
@@ -133,10 +153,19 @@ if EGGS_PATH then for _, e in pairs(EGGS_PATH:GetChildren()) do table.insert(egg
 EggSection:NewDropdown("Выберите яйцо", "Список A-Z", eggNames, function(c) selectedEgg = c end)
 EggSection:NewDropdown("Тип", "Single / Multi", {"Single", "Multi"}, function(c) hatchType = c end)
 
--- Быстрая функция отправки патронов
-local function fastSpamHatch()
+-- Измененная функция отправки: если включен сетевой спуфинг, шлем серверу админ-таблицу пассов
+local function packetSpamHatch()
     if autoHatch and selectedEgg ~= "" and REMOTE_EVENT then
-        REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
+        if serverSpoofActive then
+            -- Передаем кастомную таблицу, которую сервер фанмейда может принять за админскую
+            local fakePasses = {["Fast Hatch"] = true, ["Auto Egg"] = true, ["Multi Egg"] = true}
+            REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType, fakePasses, true)
+            REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType, fakePasses, true)
+        else
+            -- Стандартный пакетный выстрел
+            REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
+            REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
+        end
     end
 end
 
@@ -145,9 +174,8 @@ EggSection:NewToggle("Auto Hatch", "Старт", function(s)
     if s then
         task.spawn(function()
             while autoHatch do
-                fastSpamHatch()
-                -- Идеальный спам под обнуление дебаунса
-                task.wait(0.05) 
+                packetSpamHatch()
+                task.wait(0.03) 
             end
         end)
     end
