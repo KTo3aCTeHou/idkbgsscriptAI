@@ -1,6 +1,7 @@
--- === AI BUBBLE GUM ELITE (HYBRID FINAL FIXED) — ЧАСТЬ 1 ===
+-- === nothing.club — ЧАСТЬ 1 ===
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
-local Window = Library.CreateLib("AI BUBBLE GUM ELITE (GOD)", "Midnight")
+
+local Window = Library.CreateLib("nothing.club", "Midnight")
 
 -- === ИНИЦИАЛИЗАЦИЯ ===
 local rs = game:GetService("ReplicatedStorage")
@@ -80,7 +81,7 @@ task.spawn(function()
         end
     end
 end)
--- === AI BUBBLE GUM ELITE (HYBRID FINAL FIXED) — ЧАСТЬ 2 ===
+-- === nothing.club — ЧАСТЬ 2 ===
 -- Поток для Мгновенного Скипа интерфейса
 task.spawn(function()
     while task.wait(0.2) do
@@ -274,7 +275,7 @@ EggSection:NewToggle("Auto Hatch", "Старт", function(s)
     end
 end)
 
--- === ПЛАВАЮЩАЯ КНОПКА (Фикс исчезновения) ===
+-- === ПЛАВАЮЩАЯ КНОПКА ===
 local OpenBtnGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
 OpenBtnGui.Name = "AI_Draggable_UI"
 local Btn = Instance.new("TextButton", OpenBtnGui)
