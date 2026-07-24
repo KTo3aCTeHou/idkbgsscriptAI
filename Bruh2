@@ -1,4 +1,4 @@
-local Kavo = loadstring(game:HttpGet("https://githubusercontent.com"))()
+local Kavo = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
 local window = Kavo.CreateLib("BGS PRO SCRIPT (Optimized)", "DarkTheme")
 
 -- РАЗДЕЛЫ И ВКЛАДКИ (Полное сохранение вашей структуры)
