@@ -1,6 +1,5 @@
 -- === nothing.club — ЧАСТЬ 1 ===
--- ССЫЛКА НА МЕСТЕ, ВСЁ БУДЕТ РАБОТАТЬ СРАЗУ:
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
+local Library = loadstring(game:HttpGet("https://githubusercontent.com"))()
 local Window = Library.CreateLib("nothing.club", "Midnight")
 
 -- === ИНИЦИАЛИЗАЦИЯ ===
@@ -15,7 +14,8 @@ local PICKUPS = workspace:FindFirstChild("Pickups")
 
 -- Настройки
 local autoHatch = false
-local selectedEgg, hatchType = "", "Single"
+local selectedEgg = ""
+local isMultiHatch = false
 local serverDebounceTime = 0.8 
 local bypass3DRender = false
 local instantSkipUI = false
@@ -100,33 +100,42 @@ task.spawn(function()
     end
 end)
 
--- === ФУНКЦИЯ СТИЛЯ (КОТИК КРАСИВО В УГЛУ ОКНА) ===
+-- === ФУНКЦИЯ СТИЛЯ (ПОЛНОЦЕННЫЙ КОТИК-БЭКГРАУНД НА ВЕСЬ ФОН ОКНА) ===
 local function ApplyCustomStyle(id)
     pcall(function()
         local coreGui = game:GetService("CoreGui")
         
-        -- Чистим старый полноэкранный косяк
+        -- Полностью зачищаем старые косячные слои
         local oldCat = coreGui:FindFirstChild("nothing_club_background")
         if oldCat then oldCat:Destroy() end
         
         for _, gui in pairs(coreGui:GetChildren()) do
             if gui:IsA("ScreenGui") and gui:FindFirstChild("Main") then
                 local main = gui.Main
-                
-                -- Удаляем старого кота, если он был
                 if main:FindFirstChild("CustomBG") then main.CustomBG:Destroy() end
                 
-                -- Создаем маленького аккуратного котика в ПРАВОМ НИЖНЕМ углу менюшки
+                -- Котик красиво растягивается строго внутри фрейма Main как полноценный бг!
                 local bg = Instance.new("ImageLabel", main)
                 bg.Name = "CustomBG"
-                bg.Size = UDim2.new(0, 120, 0, 120) -- компактный квадратный размер
-                bg.Position = UDim2.new(1, -130, 1, -130) -- отступ от правого нижнего края
-                bg.ZIndex = 5 -- вешаем поверх подложки, но под кнопки
+                bg.Size = UDim2.new(1, 0, 1, 0)
+                bg.Position = UDim2.new(0, 0, 0, 0)
+                bg.ZIndex = 0 -- Кидаем в самый низ подложки
                 bg.BackgroundTransparency = 1
                 bg.Image = "rbxassetid://" .. id
-                bg.ImageTransparency = 0.3 -- легкая стильная прозрачность
+                bg.ImageTransparency = 0.25 -- Легкая прозрачность для стиля
                 bg.ScaleType = Enum.ScaleType.Stretch
                 Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 10)
+                
+                -- Делаем окна KavoUI просвечивающими, чтобы котик работал как полноценный фон
+                for _, child in pairs(main:GetDescendants()) do
+                    if child:IsA("Frame") or child:IsA("ScrollingFrame") then
+                        child.BackgroundTransparency = 0.85
+                        child.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+                    elseif child:IsA("TextButton") and child.Name ~= "AI" then
+                        child.BackgroundTransparency = 0.5
+                        child.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+                    end
+                end
             end
         end
     end)
@@ -157,7 +166,8 @@ MainSection:NewToggle("Auto Collect (Pickups)", "Притягивает моне
     end)
 end)
 
-MainSection:NewSlider("WalkSpeed", "Скорость бега", 500, 16, function(s)
+-- Ограничили скорость бега до 50 максимум, чтобы убрать телепорты назад на сервере! 🏃‍♂️⚡
+MainSection:NewSlider("WalkSpeed", "Скорость бега", 50, 16, function(s)
     if lp.Character and lp.Character:FindFirstChild("Humanoid") then
         lp.Character.Humanoid.WalkSpeed = s
     end
@@ -252,7 +262,10 @@ local eggNames = {}
 if EGGS_PATH then for _, e in pairs(EGGS_PATH:GetChildren()) do table.insert(eggNames, e.Name) end table.sort(eggNames) end
 
 EggSection:NewDropdown("Выберите яйцо", "Список A-Z", eggNames, function(c) selectedEgg = c addLog("Выбрано яйцо: " .. c) end)
-EggSection:NewDropdown("Тип", "Single / Multi", {"Single", "Multi"}, function(c) hatchType = c end)
+
+EggSection:NewDropdown("Тип открытия", "Single / Multi", {"Single", "Multi"}, function(c) 
+    if c == "Multi" then isMultiHatch = true else isMultiHatch = false end
+end)
 
 EggSection:NewToggle("Fast 3D-Bypass (No Render)", "Отключить 3D яйца для скорости", function(state)
     bypass3DRender = state
@@ -263,10 +276,10 @@ EggSection:NewToggle("Instant Skip UI (Visual Hack)", "Мгновенный ав
     instantSkipUI = state
 end)
 
+-- АДАПТИРОВАНО ПОД ОБНОВЛЕННУЮ СЕРВЕРНУЮ ЛОГИКУ TRUE ДЛЯ ОРИГИНАЛА 🎯
 local function packetSpamHatch()
     if autoHatch and selectedEgg ~= "" and REMOTE_EVENT then
-        REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
-        REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, hatchType)
+        REMOTE_EVENT:FireServer("PurchaseEgg", selectedEgg, isMultiHatch)
     end
 end
 
@@ -277,7 +290,7 @@ EggSection:NewToggle("Auto Hatch", "Старт", function(s)
         task.spawn(function()
             while autoHatch do
                 packetSpamHatch()
-                task.wait(0.02) 
+                task.wait(0.07) 
             end
         end)
     else
@@ -300,9 +313,9 @@ Btn.Draggable = true
 Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
 Btn.MouseButton1Click:Connect(function() Library:ToggleUI() end)
 
--- Стабильный кастомный запуск котика В УГЛУ ОКНА
+-- Стабильный запуск котика КАК КРАСИВЫЙ БЭКГРАУНД ОКНА
 task.spawn(function() 
     task.wait(1.5) 
     ApplyCustomStyle(8932053668) 
-    addLog("Котик успешно перемещен в угол меню!")
+    addLog("Котик успешно загружен на фон меню!")
 end)
