@@ -1,5 +1,5 @@
 -- === nothing.club — ЧАСТЬ 1 ===
-local Library = loadstring(game:HttpGet("https://githubusercontent.com"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZanoLeafVN/KavoMobileUI/main/KavoMobile.lua"))()
 local Window = Library.CreateLib("nothing.club", "Midnight")
 
 -- === ИНИЦИАЛИЗАЦИЯ ===
