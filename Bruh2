@@ -1,1 +1,589 @@
+-- === nothing.club v1.1 — КУСОК 1 (ФИКС ОДНОГО ПАЛЬЦА) ===
+local coreGui = game:GetService("CoreGui")
+local lp = game.Players.LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
 
+if coreGui:FindFirstChild("NothingClub_Premium") then coreGui.NothingClub_Premium:Destroy() end
+if coreGui:FindFirstChild("AI_Toggle_Btn") then coreGui.AI_Toggle_Btn:Destroy() end
+
+local REMOTE_EVENT = rs:FindFirstChild("NetworkRemoteEvent") or rs:FindFirstChild("RemoteEvent")
+local REMOTE_FUNC = rs:FindFirstChild("NetworkRemoteFunction") or rs:FindFirstChild("RemoteFunction")
+local EGGS_PATH = rs:FindFirstChild("Assets") and rs.Assets:FindFirstChild("Eggs") or rs:FindFirstChild("Eggs")
+local PICKUPS = workspace:FindFirstChild("Pickups")
+
+local eggNames = {}
+if EGGS_PATH then 
+    for _, e in pairs(EGGS_PATH:GetChildren()) do table.insert(eggNames, e.Name) end 
+    table.sort(eggNames) 
+end
+
+_G.autoHatch = false
+_G.selectedEgg = ""
+_G.isMultiHatch = false
+_G.bypass3DRender = false
+_G.autoCollect = false
+_G.soundSpam = false
+
+local ScreenGui = Instance.new("ScreenGui", coreGui)
+ScreenGui.Name = "NothingClub_Premium"
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 550, 0, 280)
+MainFrame.Position = UDim2.new(0.5, -275, 0.5, -140)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+MainFrame.BackgroundTransparency = 0.15
+MainFrame.Active = false -- УБРАЛИ ГЛАВНЫЙ БАГ МОБИЛОК! Теперь кликается ОДНИМ пальцем! 🚨💎
+MainFrame.Draggable = false 
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+-- Умный скрипт перетаскивания за шапку меню
+local UserInputService = game:GetService("UserInputService")
+local dragToggle, dragStart, startPos
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if input.Position.Y - MainFrame.AbsolutePosition.Y < 40 then
+            dragToggle = true dragStart = input.Position startPos = MainFrame.Position
+            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragToggle = false end end)
+        end
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragToggle then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+local BackgroundImage = Instance.new("ImageLabel", MainFrame)
+BackgroundImage.Name = "CustomBG"
+BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
+BackgroundImage.ZIndex = 0
+BackgroundImage.BackgroundTransparency = 1
+BackgroundImage.Image = "rbxassetid://8932053668"
+BackgroundImage.ImageTransparency = 0.45
+Instance.new("UICorner", BackgroundImage).CornerRadius = UDim.new(0, 10)
+
+local SideBar = Instance.new("Frame", MainFrame)
+SideBar.Name = "SideBar"
+SideBar.Size = UDim2.new(0, 120, 1, 0)
+SideBar.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+SideBar.BackgroundTransparency = 0.4
+SideBar.ZIndex = 3
+Instance.new("UICorner", SideBar).CornerRadius = UDim.new(0, 10)
+
+local Title = Instance.new("TextLabel", SideBar)
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Text = "nothing.club"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.BackgroundTransparency = 1
+Title.ZIndex = 4
+
+-- === nothing.club v1.1 — КУСОК 2 ===
+local ContentFrame = Instance.new("Frame", MainFrame)
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Size = UDim2.new(0, 250, 1, -30)
+ContentFrame.Position = UDim2.new(0, 135, 0, 20)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.ZIndex = 5
+
+local TrackerFrame = Instance.new("Frame", MainFrame)
+TrackerFrame.Name = "TrackerFrame"
+TrackerFrame.Size = UDim2.new(0, 135, 1, -40)
+TrackerFrame.Position = UDim2.new(1, -145, 0, 25)
+TrackerFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 8)
+TrackerFrame.BackgroundTransparency = 0.5
+TrackerFrame.ZIndex = 3
+Instance.new("UICorner", TrackerFrame).CornerRadius = UDim.new(0, 8)
+
+local TrackerTitle = Instance.new("TextLabel", TrackerFrame)
+TrackerTitle.Size = UDim2.new(1, 0, 0, 25)
+TrackerTitle.Text = "STATS TRACKER"
+TrackerTitle.TextColor3 = Color3.fromRGB(140, 140, 140)
+TrackerTitle.Font = Enum.Font.GothamBold
+TrackerTitle.TextSize = 10
+TrackerTitle.BackgroundTransparency = 1
+TrackerTitle.ZIndex = 4
+
+local UptimeLabel = Instance.new("TextLabel", TrackerFrame)
+UptimeLabel.Size = UDim2.new(1, -15, 0, 18)
+UptimeLabel.Position = UDim2.new(0, 10, 0, 35)
+UptimeLabel.Text = "Uptime: 00:00:00"
+UptimeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+UptimeLabel.Font = Enum.Font.Gotham
+UptimeLabel.TextSize = 11
+UptimeLabel.TextXAlignment = Enum.TextXAlignment.Left
+UptimeLabel.BackgroundTransparency = 1
+UptimeLabel.ZIndex = 4
+
+local TaskLabel = Instance.new("TextLabel", TrackerFrame)
+TaskLabel.Size = UDim2.new(1, -15, 0, 18)
+TaskLabel.Position = UDim2.new(0, 10, 0, 55)
+TaskLabel.Text = "Task: Idle"
+TaskLabel.TextColor3 = Color3.fromRGB(0, 255, 140)
+TaskLabel.Font = Enum.Font.Gotham
+TaskLabel.TextSize = 11
+TaskLabel.TextXAlignment = Enum.TextXAlignment.Left
+TaskLabel.BackgroundTransparency = 1
+TaskLabel.ZIndex = 4
+
+local CloseBtn = Instance.new("TextButton", MainFrame)
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseBtn.Position = UDim2.new(1, -25, 0, 8)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(40, 20, 20)
+CloseBtn.BackgroundTransparency = 0.3
+CloseBtn.Text = "×"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.TextSize = 16
+CloseBtn.ZIndex = 6
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 4)
+
+local ConfirmFrame = Instance.new("Frame", ScreenGui)
+ConfirmFrame.Name = "ConfirmFrame"
+ConfirmFrame.Size = UDim2.new(0, 240, 0, 90)
+ConfirmFrame.Position = UDim2.new(0.5, -120, 0.5, -45)
+ConfirmFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+ConfirmFrame.ZIndex = 10
+ConfirmFrame.Visible = false
+Instance.new("UICorner", ConfirmFrame).CornerRadius = UDim.new(0, 8)
+
+local ConfirmTitle = Instance.new("TextLabel", ConfirmFrame)
+ConfirmTitle.Size = UDim2.new(1, 0, 0, 35)
+ConfirmTitle.Text = "Вы точно хотите отключить чит?"
+ConfirmTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+ConfirmTitle.Font = Enum.Font.GothamBold
+ConfirmTitle.TextSize = 12
+ConfirmTitle.BackgroundTransparency = 1
+ConfirmTitle.ZIndex = 11
+
+local YesBtn = Instance.new("TextButton", ConfirmFrame)
+YesBtn.Size = UDim2.new(0, 80, 0, 25)
+YesBtn.Position = UDim2.new(0, 30, 1, -35)
+YesBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
+YesBtn.Text = "Да"
+YesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+YesBtn.Font = Enum.Font.GothamBold
+YesBtn.TextSize = 11
+YesBtn.ZIndex = 11
+Instance.new("UICorner", YesBtn).CornerRadius = UDim.new(0, 5)
+
+local NoBtn = Instance.new("TextButton", ConfirmFrame)
+NoBtn.Size = UDim2.new(0, 80, 0, 25)
+NoBtn.Position = UDim2.new(1, -110, 1, -35)
+NoBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+NoBtn.Text = "Нет"
+NoBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+NoBtn.Font = Enum.Font.GothamBold
+NoBtn.TextSize = 11
+NoBtn.ZIndex = 11
+Instance.new("UICorner", NoBtn).CornerRadius = UDim.new(0, 5)
+
+CloseBtn.MouseButton1Click:Connect(function() ConfirmFrame.Visible = true end)
+NoBtn.MouseButton1Click:Connect(function() ConfirmFrame.Visible = false end)
+YesBtn.MouseButton1Click:Connect(function()
+    if coreGui:FindFirstChild("AI_Toggle_Btn") then coreGui.AI_Toggle_Btn:Destroy() end
+    ScreenGui:Destroy()
+end)
+-- === nothing.club v1.1 — КУСОК 3 ===
+local Pages = {}
+local function CreatePage(name)
+    local PageFrame = Instance.new("ScrollingFrame", ContentFrame)
+    PageFrame.Name = name .. "Page"
+    PageFrame.Size = UDim2.new(1, 0, 1, 0)
+    PageFrame.BackgroundTransparency = 1
+    PageFrame.Visible = false
+    PageFrame.ZIndex = 3
+    PageFrame.ScrollBarThickness = 2
+    PageFrame.CanvasSize = UDim2.new(0, 0, 0, 350)
+    local UIListLayout = Instance.new("UIListLayout", PageFrame)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Padding = UDim.new(0, 6)
+    Pages[name] = PageFrame
+    return PageFrame
+end
+
+local MainTab = CreatePage("Main")
+local EggsTab = CreatePage("Eggs")
+local HacksTab = CreatePage("Hacks")
+local SettingsTab = CreatePage("Settings")
+
+local function ShowPage(name)
+    for _, page in pairs(Pages) do page.Visible = false end
+    if Pages[name] then Pages[name].Visible = true end
+end
+
+local ButtonLayout = Instance.new("UIListLayout", SideBar)
+ButtonLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ButtonLayout.Padding = UDim.new(0, 5)
+ButtonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+local Spacer = Instance.new("Frame", SideBar)
+Spacer.Size = UDim2.new(1, 0, 0, 30)
+Spacer.BackgroundTransparency = 1
+Spacer.LayoutOrder = 0
+
+local function AddTabButton(name, layoutOrder)
+    local Btn = Instance.new("TextButton", SideBar)
+    Btn.Size = UDim2.new(0, 105, 0, 28)
+    Btn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    Btn.BackgroundTransparency = 0.3
+    Btn.Text = name
+    Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Btn.Font = Enum.Font.GothamBold
+    Btn.TextSize = 11
+    Btn.ZIndex = 4
+    Btn.LayoutOrder = layoutOrder
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 5)
+    Btn.MouseButton1Click:Connect(function()
+        ShowPage(name)
+        for _, child in pairs(SideBar:GetChildren()) do
+            if child:IsA("TextButton") then child.TextColor3 = Color3.fromRGB(150, 150, 150) end
+        end
+        Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+end
+
+AddTabButton("Main", 1)
+AddTabButton("Eggs", 2)
+AddTabButton("Hacks", 3)
+AddTabButton("Settings", 4)
+ShowPage("Main")
+
+local function AddToggle(parent, text, default, callback)
+    local state = default
+    local Frame = Instance.new("Frame", parent)
+    Frame.Size = UDim2.new(1, -10, 0, 30)
+    Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    Frame.BackgroundTransparency = 0.4
+    Frame.ZIndex = 4
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 5)
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Size = UDim2.new(0.7, 0, 1, 0)
+    Label.Position = UDim2.new(0, 10, 0, 0)
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(230, 230, 230)
+    Label.Font = Enum.Font.Gotham
+    Label.TextSize = 11
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.BackgroundTransparency = 1
+    Label.ZIndex = 5
+    local Btn = Instance.new("TextButton", Frame)
+    Btn.Size = UDim2.new(0, 40, 0, 18)
+    Btn.Position = UDim2.new(1, -50, 0.5, -9)
+    Btn.BackgroundColor3 = state and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(60, 60, 65)
+    Btn.Text = state and "ON" or "OFF"
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.Font = Enum.Font.GothamBold
+    Btn.TextSize = 9
+    Btn.ZIndex = 5
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 4)
+    Btn.MouseButton1Click:Connect(function()
+        state = not state
+        Btn.BackgroundColor3 = state and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(60, 60, 65)
+        Btn.Text = state and "ON" or "OFF"
+        callback(state)
+    end)
+end
+
+local function AddSlider(parent, text, min, max, default, callback)
+    local Frame = Instance.new("Frame", parent)
+    Frame.Size = UDim2.new(1, -10, 0, 38)
+    Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    Frame.BackgroundTransparency = 0.4
+    Frame.ZIndex = 4
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 5)
+    local Label = Instance.new("TextLabel", Frame)
+    Label.Size = UDim2.new(0.5, 0, 0, 15)
+    Label.Position = UDim2.new(0, 10, 0, 3)
+    Label.Text = text .. ": " .. tostring(default)
+    Label.TextColor3 = Color3.fromRGB(230, 230, 230)
+    Label.Font = Enum.Font.Gotham
+    Label.TextSize = 11
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.BackgroundTransparency = 1
+    Label.ZIndex = 5
+    local SliderBG = Instance.new("Frame", Frame)
+    SliderBG.Size = UDim2.new(1, -20, 0, 4)
+    SliderBG.Position = UDim2.new(0, 10, 1, -10)
+    SliderBG.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+    SliderBG.ZIndex = 5
+    local SliderFill = Instance.new("Frame", SliderBG)
+    SliderFill.Size = UDim2.new((default - min)/(max - min), 0, 1, 0)
+    SliderFill.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    SliderFill.ZIndex = 5
+    local UserInputService = game:GetService("UserInputService")
+    local dragging = false
+    Frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local mousePos = input.Position.X
+            local sliderLeft = SliderBG.AbsolutePosition.X
+            local sliderWidth = SliderBG.AbsoluteSize.X
+            local percentage = math.clamp((mousePos - sliderLeft) / sliderWidth, 0, 1)
+            SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+            local value = math.floor(min + (max - min) * percentage)
+            Label.Text = text .. ": " .. tostring(value)
+            callback(value)
+        end
+    end)
+end
+
+local function AddButton(parent, text, callback)
+    local Btn = Instance.new("TextButton", parent)
+    Btn.Size = UDim2.new(1, -10, 0, 28)
+    Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    Btn.BackgroundTransparency = 0.4
+    Btn.Text = text
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.Font = Enum.Font.GothamBold
+    Btn.TextSize = 11
+    Btn.ZIndex = 4
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 5)
+    Btn.MouseButton1Click:Connect(callback)
+end
+
+local function AddTextBox(parent, placeholder, callback)
+    local Box = Instance.new("TextBox", parent)
+    Box.Size = UDim2.new(1, -10, 0, 28)
+    Box.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    Box.BackgroundTransparency = 0.4
+    Box.PlaceholderText = placeholder
+    Box.Text = ""
+    Box.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Box.Font = Enum.Font.Gotham
+    Box.TextSize = 11
+    Box.ZIndex = 4
+    Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 5)
+    Box.FocusLost:Connect(function(enterPressed)
+        if enterPressed and Box.Text ~= "" then callback(Box.Text) Box.Text = "" end
+    end)
+end
+
+task.spawn(function()
+    local start = os.time()
+    while task.wait(1) do
+        if coreGui:FindFirstChild("NothingClub_Premium") then
+            local diff = os.time() - start
+            local hours = math.floor(diff / 3600)
+            local mins = math.floor((diff % 3600) / 60)
+            local secs = diff % 60
+            UptimeLabel.Text = string.format("Uptime: %02d:%02d:%02d", hours, mins, secs)
+        else break end
+    end
+end)
+-- === nothing.club v1.1 — КУСОК 4 ===
+AddToggle(MainTab, "Auto Collect (Pickups)", false, function(state)
+    _G.autoCollect = state
+    pcall(function() TaskLabel.Text = state and "Task: Coins Farm" or "Task: Idle" end)
+    task.spawn(function()
+        while _G.autoCollect do
+            if PICKUPS then
+                for _, item in pairs(PICKUPS:GetChildren()) do
+                    if item:IsA("BasePart") and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+                        item.CFrame = lp.Character.HumanoidRootPart.CFrame
+                    end
+                end
+            end
+            task.wait(0.5)
+        end
+    end)
+end)
+
+AddSlider(MainTab, "Speed (WalkSpeed Max 50)", 16, 50, 16, function(value)
+    if lp.Character and lp.Character:FindFirstChild("Humanoid") then lp.Character.Humanoid.WalkSpeed = value end
+end)
+
+local eggButtonsTable = {}
+local SearchBox = Instance.new("TextBox", EggsTab)
+SearchBox.Size = UDim2.new(1, -10, 0, 28)
+SearchBox.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+SearchBox.BackgroundTransparency = 0.4
+SearchBox.PlaceholderText = "🔍 Поиск яйца по названию..."
+SearchBox.Text = ""
+SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchBox.Font = Enum.Font.Gotham
+SearchBox.TextSize = 11
+Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 5)
+
+local HeaderBtn = Instance.new("TextButton", EggsTab)
+HeaderBtn.Size = UDim2.new(1, -10, 0, 30)
+HeaderBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+HeaderBtn.BackgroundTransparency = 0.3
+HeaderBtn.Text = "[ + ] КАТАЛОГ ЯИЦ (A-Z)"
+HeaderBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+HeaderBtn.Font = Enum.Font.GothamBold
+HeaderBtn.TextSize = 11
+Instance.new("UICorner", HeaderBtn).CornerRadius = UDim.new(0, 5)
+
+local ListScroll = Instance.new("ScrollingFrame", EggsTab)
+ListScroll.Size = UDim2.new(1, -10, 0, 110)
+ListScroll.BackgroundTransparency = 0.6
+ListScroll.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+ListScroll.Visible = false
+ListScroll.ScrollBarThickness = 5
+ListScroll.ZIndex = 6
+
+local ListLayout = Instance.new("UIListLayout", ListScroll)
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 4)
+
+ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    ListScroll.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y + 10)
+end)
+Instance.new("UICorner", ListScroll).CornerRadius = UDim.new(0, 6)
+
+-- МОБИЛЬНЫЙ ФИКС: Перевели хидер на событие .Activated для одного тапа! 📲
+HeaderBtn.Activated:Connect(function()
+    ListScroll.Visible = not ListScroll.Visible
+    HeaderBtn.Text = ListScroll.Visible and "[ - ] ЗАКРЫТЬ КАТАЛОГ" or "[ + ] КАТАЛОГ ЯИЦ (A-Z)"
+end)
+
+for _, eggName in pairs(eggNames) do
+    local EBtn = Instance.new("TextButton", ListScroll)
+    EBtn.Size = UDim2.new(1, -12, 0, 22)
+    EBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    EBtn.BackgroundTransparency = 0.5
+    EBtn.Text = eggName
+    EBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    EBtn.Font = Enum.Font.Gotham
+    EBtn.TextSize = 11
+    EBtn.ZIndex = 7
+    Instance.new("UICorner", EBtn).CornerRadius = UDim.new(0, 4)
+    
+    eggButtonsTable[eggName] = EBtn
+    
+    -- МОБИЛЬНЫЙ ФИКС: Выбор конкретного яйца строго с одного касания пальца! 🎯💙
+    EBtn.Activated:Connect(function()
+        _G.selectedEgg = eggName
+        pcall(function() TaskLabel.Text = "Target: " .. eggName end)
+        for _, btn in pairs(eggButtonsTable) do
+            btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+            btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        end
+        EBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+        EBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+end
+
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local query = string.lower(SearchBox.Text)
+    for eggName, btn in pairs(eggButtonsTable) do
+        if query == "" or string.find(string.lower(eggName), query) then
+            btn.Visible = true
+        else btn.Visible = false end
+    end
+end)
+
+AddToggle(EggsTab, "Multi-Hatch mode (True/False)", false, function(state) _G.isMultiHatch = state end)
+AddToggle(EggsTab, "Fast 3D-Bypass (No Render)", false, function(state) _G.bypass3DRender = state end)
+
+local function packetSpamHatch()
+    if _G.autoHatch and _G.selectedEgg ~= "" and REMOTE_EVENT then
+        REMOTE_EVENT:FireServer("PurchaseEgg", _G.selectedEgg, _G.isMultiHatch)
+    end
+end
+
+-- Авто-открытие тоже переведено на мобильный фикс тапа
+local HatchToggleFrame = EggsTab:FindFirstChild("AUTO HATCH (START)Page") or EggsTab
+AddToggle(EggsTab, "AUTO HATCH (START)", false, function(state)
+    _G.autoHatch = state
+    pcall(function() TaskLabel.Text = state and "Task: Hatching Eggs" or "Task: Idle" end)
+if state then
+        task.spawn(function()
+            while _G.autoHatch do packetSpamHatch() task.wait(0.07) end
+        end)
+    end
+end)
+
+AddToggle(HacksTab, "Become Shiny (Visual Aura)", false, function(state)
+    if state and lp.Character then
+        for _, part in pairs(lp.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                local box = Instance.new("SelectionBox", part)
+                box.Name = "ShinyGlow"
+                box.Adornee = part
+                box.Color3 = Color3.fromRGB(255, 215, 0)
+                box.LineThickness = 0.04
+                local aura = Instance.new("ForceField", lp.Character)
+                aura.Name = "ShinyAura"
+            end
+        end
+    else
+        if lp.Character then
+            for _, v in pairs(lp.Character:GetDescendants()) do
+                if v.Name == "ShinyGlow" or v.Name == "ShinyAura" then v:Destroy() end
+            end
+        end
+    end
+end)
+
+AddButton(HacksTab, "Emit Legendary Particles", function()
+    pcall(function()
+        local effectsFolder = rs.Assets:FindFirstChild("LegendaryEffects")
+        if effectsFolder and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+            for _, effect in pairs(effectsFolder:GetChildren()) do
+                local clone = effect:Clone()
+                clone.Parent = lp.Character.HumanoidRootPart
+                clone:Emit(30)
+                game:GetService("Debris"):AddItem(clone, 3)
+            end
+        end
+    end)
+end)
+
+AddToggle(HacksTab, "Sound Spam (Special Unlock)", false, function(state)
+    _G.soundSpam = state
+    task.spawn(function()
+        while _G.soundSpam do
+            pcall(function()
+                local sound = rs.Assets.Sounds:FindFirstChild("Special_Unlock")
+                if sound then sound:Play() end
+            end)
+            task.wait(0.1)
+        end
+    end)
+end)
+
+AddButton(HacksTab, "Unlock Passes (Upvalues Method)", function()
+    for _, f in pairs(getgc()) do
+        if type(f) == "function" and islclosure(f) then
+            local upvals = debug.getupvalues(f)
+            for i, v in pairs(upvals) do
+                if type(v) == "table" and (rawget(v, "Quantum Gum") ~= nil or rawget(v, "+500 Slots") ~= nil) then
+                    for pName, val in pairs(v) do if type(val) == "boolean" then v[pName] = true end end
+                    debug.setupvalue(f, i, v)
+                end
+            end
+        end
+    end
+end)
+
+AddTextBox(SettingsTab, "Сменить ID котика на фоне", function(text)
+    local id = tonumber(text)
+    if id and MainFrame:FindFirstChild("CustomBG") then MainFrame.CustomBG.Image = "rbxassetid://" .. id end
+end)
+
+local OpenBtnGui = Instance.new("ScreenGui", coreGui)
+OpenBtnGui.Name = "AI_Toggle_Btn"
+local Btn = Instance.new("TextButton", OpenBtnGui)
+Btn.Size = UDim2.new(0, 45, 0, 45)
+Btn.Position = UDim2.new(0, 15, 0.3, 0)
+Btn.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+Btn.Text = "AI"
+Btn.TextColor3 = Color3.new(1,1,1)
+Btn.Font = Enum.Font.GothamBold
+Btn.TextSize = 14
+Btn.Active = true
+Btn.Draggable = true
+Instance.new("UICorner", Btn).CornerRadius = UDim.new(1, 0)
+Btn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
