@@ -1,0 +1,3936 @@
+-- Script Path: game:GetService("ReplicatedStorage").Controllers.Pets.EggController
+-- Took 0.5s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local contextActionService: ContextActionService = game:GetService("ContextActionService")
+local players: Players = game:GetService("Players")
+local replicatedStorage: ReplicatedStorage = game:GetService("ReplicatedStorage")
+local starterGui: StarterGui = game:GetService("StarterGui")
+local runService: RunService = game:GetService("RunService")
+local tweenService: TweenService = game:GetService("TweenService")
+local userInputService: UserInputService = game:GetService("UserInputService")
+local buttonEffects = require(replicatedStorage.Modules.Client.Common.ButtonEffects)
+local closeButtonStyle = require(replicatedStorage.Modules.Client.Common.CloseButtonStyle)
+local objectiveIcons = require(replicatedStorage.Modules.Client.Game.ObjectiveIcons)
+local dataController = require(replicatedStorage.Controllers.Core.DataController)
+local replicaTouches = require(replicatedStorage.Modules.Client.Core.ReplicaTouches)
+local inputController = require(replicatedStorage.Controllers.Core.InputController)
+local formatNumber = require(replicatedStorage.Modules.Client.Common.FormatNumber)
+local hatchRenderer = require(replicatedStorage.Modules.Client.Pets.HatchRenderer)
+local hatchEggShell = require(replicatedStorage.Modules.Client.Pets.HatchEggShell)
+local eggLocks = require(replicatedStorage.Modules.Client.Pets.EggLocks)
+local eggUnlockBanner = require(replicatedStorage.Modules.Client.Pets.EggUnlockBanner)
+local eggIdleAnimation = require(replicatedStorage.Modules.Client.Pets.EggIdleAnimation)
+local eggAffordability = require(replicatedStorage.Modules.Client.Pets.EggAffordability)
+local eggCostSigns = require(replicatedStorage.Modules.Client.Pets.EggCostSigns)
+local eggMenuView = require(replicatedStorage.Modules.Client.Pets.EggMenuView)
+local eggMenuPad = require(replicatedStorage.Modules.Client.Pets.EggMenuPad)
+local eggMenuFit = require(replicatedStorage.Modules.Client.Pets.EggMenuFit)
+local eggCameraAssist = require(replicatedStorage.Modules.Client.Pets.EggCameraAssist)
+local hudObstacles = require(replicatedStorage.Modules.Client.Common.HudObstacles)
+local topHudLayout = require(replicatedStorage.Modules.Client.Common.TopHudLayout)
+local touchLayout = require(replicatedStorage.Modules.Client.Common.TouchLayout)
+local offlineHatchRenderer = require(replicatedStorage.Modules.Client.Pets.OfflineHatchRenderer)
+local hatchesPanel = require(replicatedStorage.Modules.Client.Pets.HatchesPanel)
+local secretHatchFormula = require(replicatedStorage.Shared.Pets.SecretHatchFormula)
+local autoHatchPityBar = require(replicatedStorage.Modules.Client.Pets.AutoHatchPityBar)
+local petReceiptEffects = require(replicatedStorage.Modules.Client.Pets.PetReceiptEffects)
+local secretHatchRenderer = require(replicatedStorage.Modules.Client.Pets.SecretHatchRenderer)
+local secretHatchCutscenes = require(replicatedStorage.Modules.Client.Pets.SecretHatchCutscenes)
+local screenHide = require(replicatedStorage.Modules.Client.Common.ScreenHide)
+local monetizationController = require(replicatedStorage.Controllers.Monetization.MonetizationController)
+local notificationController = require(replicatedStorage.Controllers.UI.NotificationController)
+local tooltipController = require(replicatedStorage.Controllers.UI.TooltipController)
+local uiStrokeController = require(replicatedStorage.Controllers.UI.UIStrokeController)
+local clientComm = require(replicatedStorage.Packages.Comm).ClientComm
+local soundController = require(replicatedStorage.Controllers.Audio.SoundController)
+local launchEggConfig = require(replicatedStorage.Shared.Pets.LaunchEggConfig)
+local eggPricing = require(replicatedStorage.Shared.Pets.EggPricing)
+local currencyConfig = require(replicatedStorage.Shared.Core.CurrencyConfig)
+local hatchRulesConfig = require(replicatedStorage.Shared.Pets.HatchRulesConfig)
+local offlineHatchConfig = require(replicatedStorage.Shared.Pets.OfflineHatchConfig)
+local reconnectConfig = require(replicatedStorage.Shared.Core.ReconnectConfig)
+local launchPetConfig = require(replicatedStorage.Shared.Pets.LaunchPetConfig)
+local petIndexCatalog = require(replicatedStorage.Shared.Pets.PetIndexCatalog)
+local boostFormula = require(replicatedStorage.Shared.Items.BoostFormula)
+local gamepassPerks = require(replicatedStorage.Shared.Monetization.GamepassPerks)
+local godlyHatchConfig = require(replicatedStorage.Shared.Pets.GodlyHatchConfig)
+local v54 = replicatedStorage.Shared:WaitForChild("Admin")
+local globalEventConfig = v54:WaitForChild("GlobalEventConfig")
+local globalEventState = v54:WaitForChild("GlobalEventState")
+
+v54 = globalEventConfig:IsA("ModuleScript") and globalEventState:IsA("ModuleScript")
+assert(v54, "Egg event-state modules must be ModuleScripts")
+
+local v57 = require(globalEventConfig)
+local v58 = require(globalEventState)
+local v59 = clientComm.new(replicatedStorage.RemoteServices, false, "EggService"):BuildObject()
+local v60 = clientComm.new(replicatedStorage.RemoteServices, false, "OfflineRewardsService"):BuildObject()
+local LocalPlayer: Player = players.LocalPlayer
+local u62 = nil
+local u63 = nil
+local u64 = nil
+local u65 = nil
+local u66 = nil
+local u67 = nil
+local u68 = nil
+local u69 = nil
+local u70 = nil
+local color3 = Color3.fromRGB(255, 211, 60)
+local u72: boolean = false
+local u73: boolean = false
+local n1: number = 0
+local t1: {[any]: any} = {}
+local u76: boolean = false
+local u77: boolean = false
+local n2: number = 0
+local u79: boolean = false
+local n3 = 0
+local t2: {[any]: any} = {}
+local n4 = 0
+local u83 = nil
+local u84 = nil
+local t3: {[any]: any} = { X = 0, Y = 0, Along = 0, Fit = 1 }
+local u86 = nil
+local s1 = "Above"
+local u88 = nil
+local t4: {[any]: any} = { Single = 1, Triple = 3, Octo = 8 }
+local t5: {[any]: any} = { Single = 1, Triple = 1.07, Octo = 1.14 }
+local t6: {[any]: any} = {
+    { Name = "TS2_EggSingle", Count = 1, Key = Enum.KeyCode.ButtonX },
+    { Name = "TS2_EggTriple", Count = 3, Key = Enum.KeyCode.ButtonR1 },
+    { Name = "TS2_EggOcto", Count = 8, Key = Enum.KeyCode.ButtonL2 }
+}
+local t7: {[any]: any} = {
+    { Name = "TS2_EggTripleKeyboard", Count = 3, Key = Enum.KeyCode.R },
+    { Name = "TS2_EggOctoKeyboard", Count = 8, Key = Enum.KeyCode.T }
+}
+local u93 = nil
+local u94 = nil
+local u95 = nil
+local u96 = nil
+local u97 = nil
+local u98 = nil
+local u99 = nil
+local u100 = nil
+local u101 = nil
+local u102 = nil
+local v103 = table.freeze({ Transparency = 0.5, Icon = 0.35, Color = Color3.new(0, 0, 0) })
+local t8: {[any]: any} = {
+    Rebirths = 0,
+    Since = nil,
+    Owed = false,
+    OwedAt = -math.huge,
+    OwedCoins = 0,
+    OwedRebirths = 0,
+    Polling = false,
+    LastInput = -math.huge
+}
+local v105 = table.freeze({ Idle = 30, Poll = 0.25, Hud = 1.5, Owed = 10 })
+local s2 = "Normal"
+local t9: {[any]: any} = {
+    Normal = "Normal",
+    Golden = "Golden",
+    Diamond = "Diamond",
+    Shiny = "Rainbow"
+}
+local u108 = nil
+local t10: {[any]: any} = {}
+local u110: boolean = false
+local t11: {[any]: any} = {}
+
+local function isSecret(p1)
+    local u189: boolean = false
+
+    if type(p1) == "table" then
+        u189 = false
+
+        if type(p1.Rarity) == "string" then
+            u189 = string.match(p1.Rarity, "^Secret") ~= nil
+        end
+    end
+
+    return u189
+end
+local function withoutSecrets(p2)
+    local pets: {[any]: any} = {}
+
+    for iterFirst, iterSecond in p2.Pets, nil, nil do
+        local u194: boolean = false
+
+        if type(iterSecond) == "table" then
+            u194 = false
+
+            if type(iterSecond.Rarity) == "string" then
+                u194 = string.match(iterSecond.Rarity, "^Secret") ~= nil
+            end
+        end
+
+        if not u194 then
+            table.insert(pets, iterSecond)
+        end
+    end
+
+    if #pets == #p2.Pets then
+        return p2
+    end
+
+    local v195 = table.clone(p2)
+
+    v195.Pets = pets
+
+    return v195
+end
+local function secretRevealPlaying()
+    return u110 or secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying()
+end
+local function secretRevealBusy()
+    local v196 = u110 or secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying()
+
+    if v196 then
+        v196 = not secretHatchRenderer:IsAwaitingHold()
+    end
+
+    return v196
+end
+
+local n5 = if runService:IsStudio() then 0 else hatchRulesConfig.SecretPityRevealSeconds
+
+local function pitySeconds(p3)
+    local v198 = dataController:GetReplica().Data
+
+    if not secretHatchFormula.SecretsRevealed(v198.Pets.Index, launchEggConfig[p3]) then
+        return nil
+    end
+
+    local v199 = secretHatchFormula.GetDrought(v198.Eggs, p3)
+
+    if v199 < n5 then
+        return nil
+    end
+
+    return v199
+end
+local function canAffordAutoBatch(p4)
+    local v201 = launchEggConfig[p4]
+
+    if v201 == nil then
+        return false
+    end
+
+    local v202 = dataController:GetReplica().Data
+    local v203 = v202.Currencies.Coins or 0
+    local v204 = eggPricing.GetTotal(v202, p4, v201.Price, 2)
+
+    return v203 >= v204
+end
+local function offlineHatchOn()
+    local v205 = dataController:GetReplica()
+    local u206: boolean = true
+
+    if v205 ~= nil then
+        u206 = v205.Data.Offline.HatchOff ~= true
+    end
+
+    v205 = u102
+
+    if v205 == nil then
+        return u206
+    end
+
+    if u206 == v205.On or not (os.clock() - v205.At < 5) then
+        u102 = nil
+
+        return u206
+    end
+
+    return v205.On
+end
+local function drawOfflineToggle(p5, p6)
+    local main = p5:FindFirstChild("Main")
+
+    if main == nil then
+        return
+    end
+
+    local t16 = u101 or {
+        Color = main.BackgroundColor3,
+        Transparency = main.BackgroundTransparency
+    }
+
+    u101 = t16
+    main.Label.Text = if p6 then "Offline: ON" else "Offline: OFF"
+    main.Icon.ImageTransparency = if p6 then 0 else v103.Icon
+    main.BackgroundColor3 = if p6 then t16.Color else v103.Color
+    main.BackgroundTransparency = if p6 then t16.Transparency else v103.Transparency
+end
+local function refreshAutoHatchHud()
+    local v211 = u94
+    local v212 = u96
+
+    if v211 == nil or v212 == nil then
+        return
+    end
+
+    local u213: boolean = u93 ~= nil
+    local u214: boolean = not u73
+
+    if u214 then
+        u214 = not screenHide.Hides(v211)
+
+        if u214 then
+            u214 = u213
+
+            if not u214 then
+                u214 = false
+
+                if u95 ~= nil then
+                    u214 = not touchLayout.Touch
+
+                    if not u214 then
+                        local v215 = u95
+                        local v216 = launchEggConfig[v215]
+
+                        if v216 == nil then
+                            u214 = false
+                        else
+                            local v217 = dataController:GetReplica().Data
+                            local v218 = v217.Currencies.Coins or 0
+                            local v219 = eggPricing.GetTotal(v217, v215, v216.Price, 2)
+
+                            u214 = v218 >= v219
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    if u214 ~= v211.Enabled then
+        v211.Enabled = u214
+    end
+
+    if u213 ~= u98 then
+        u98 = u213
+        v212.Icon.Visible = not u213
+        v212.Icon2.Visible = u213
+        v212.Label.Text = if u213 then "Stop" else "Auto Open!"
+    end
+
+    local v220 = u99
+
+    if v220 ~= nil then
+        local visible = u213 and touchLayout.Touch and offlineHatchConfig.Enabled
+
+        if visible ~= v220.Visible then
+            v220.Visible = visible
+        end
+
+        local v222 = visible
+
+        if v222 then
+            local v223 = dataController:GetReplica()
+            local u224: boolean = true
+
+            if v223 ~= nil then
+                u224 = v223.Data.Offline.HatchOff ~= true
+            end
+
+            local v225 = u102
+
+            if v225 == nil then
+                v222 = u224
+            elseif u224 == v225.On or not (os.clock() - v225.At < 5) then
+                u102 = nil
+                v222 = u224
+            else
+                v222 = v225.On
+            end
+        end
+
+        if visible and v222 ~= u100 then
+            u100 = v222
+            drawOfflineToggle(v220, v222)
+        end
+    end
+
+    local v226 = u97
+
+    if v226 ~= nil then
+        local u227: boolean = v226.PlaybackState == Enum.PlaybackState.Playing
+
+        if not u214 or not u213 then
+            if u227 then
+                v226:Pause()
+            end
+        elseif not u227 then
+            v226:Play()
+        end
+    end
+
+    local autoHatchPityBarSet = autoHatchPityBar.Set
+    local v229
+
+    if u93 == nil or u73 then
+        v229 = nil
+    else
+        local v230 = u93
+        local v231 = dataController:GetReplica().Data
+
+        if not secretHatchFormula.SecretsRevealed(v231.Pets.Index, launchEggConfig[v230]) then
+            v229 = nil
+        else
+            local v232 = secretHatchFormula.GetDrought(v231.Eggs, v230)
+
+            v229 = if v232 < n5 then nil else v232
+        end
+    end
+
+    autoHatchPityBarSet(v229, u93)
+end
+local function unbindGamepadHatches()
+    contextActionService:UnbindAction("TS2_EggSingleKeyboard")
+    contextActionService:UnbindAction("TS2_EggAutoKeyboard")
+    contextActionService:UnbindAction("TS2_EggGodly")
+
+    for key, value in t7 do
+        contextActionService:UnbindAction(value.Name)
+    end
+
+    for key2, value2 in t6 do
+        contextActionService:UnbindAction(value2.Name)
+    end
+end
+local function eggPart(p7)
+    local egg = p7:FindFirstChild("Egg")
+    local v239
+
+    if egg == nil then
+        v239 = p7.PrimaryPart or p7:FindFirstChildWhichIsA("BasePart", true)
+
+        return v239
+    end
+
+    if egg:IsA("BasePart") then
+        return egg
+    end
+
+    if egg:IsA("Model") then
+        return egg.PrimaryPart or egg:FindFirstChildWhichIsA("BasePart", true)
+    end
+
+    v239 = p7.PrimaryPart or p7:FindFirstChildWhichIsA("BasePart", true)
+
+    return v239
+end
+local function updateWorldPriceSign(p8)
+    local v241 = if p8:IsA("SurfaceGui") then p8 else p8:FindFirstAncestorWhichIsA("SurfaceGui")
+
+    if v241 == nil then
+        return
+    end
+
+    local v242 = v241.Parent
+
+    while v242 ~= nil and v242.Parent ~= u63 do
+        v242 = v242.Parent
+    end
+
+    local v243 = if v242 == nil then nil else launchEggConfig[v242.Name]
+
+    if v243 == nil then
+        return
+    end
+
+    local v244 = if v242 == nil then nil else v242:FindFirstChild("EggCostSign")
+    local v245 = if v244 == nil then nil else v244:FindFirstChild("CanPurchase")
+
+    if v245 ~= nil and v241:IsDescendantOf(v245) then
+        return
+    end
+
+    if v244 == nil or v241:IsDescendantOf(v244) then
+        local textLabel = v241:FindFirstChild("TextLabel")
+
+        if textLabel == nil or not textLabel:IsA("TextLabel") then
+            return
+        end
+
+        local u247: boolean = true
+
+        if v244 ~= nil then
+            u247 = false
+
+            if v244:GetAttribute("CanAfford") ~= true then
+                u247 = v244:GetAttribute("EggUIOpen") ~= true
+            end
+        end
+
+        v241.Enabled = u247
+        textLabel.Visible = true
+        textLabel.TextTransparency = 0
+
+        local eggPricingGetUnitPrice = eggPricing.GetUnitPrice
+        local v249 = dataController:GetReplica()
+        local v250 = eggPricingGetUnitPrice(v249.Data, v242.Name, v243.Price)
+
+        textLabel.Text = formatNumber:Abbreviate(v250, true)
+
+        local foundChild = v241:FindFirstChildWhichIsA("ImageLabel", true)
+
+        if foundChild ~= nil then
+            foundChild.Image = currencyConfig.Icons.Coins
+            foundChild.Visible = true
+            foundChild.ImageTransparency = 0
+        end
+
+        return
+    end
+
+    v241.Enabled = false
+end
+
+local u125 = nil
+local u126 = false
+local tweenInfo = TweenInfo.new(0.32, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+local tweenInfo2 = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+local tweenInfo3 = TweenInfo.new(14, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1)
+local tweenInfo4 = TweenInfo.new(0.9, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+local tweenInfo5 = TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+
+local function closePityInfo()
+    if u125 ~= nil then
+        u125:Destroy()
+        u125 = nil
+    end
+end
+local function openPityInfo(p9, p10, p11)
+    if u125 ~= nil then
+        u125:Destroy()
+        u125 = nil
+    end
+
+    local secretPity: Instance = starterGui:FindFirstChild("SecretPity")
+    local v256 = if secretPity == nil then nil else secretPity:FindFirstChild("Info")
+
+    if v256 == nil or not v256:IsA("GuiObject") then
+        return
+    end
+
+    local secretPityInfo: ScreenGui = Instance.new("ScreenGui")
+
+    secretPityInfo.Name = "SecretPityInfo"
+    secretPityInfo.ResetOnSpawn = false
+    secretPityInfo.IgnoreGuiInset = true
+    secretPityInfo.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    secretPityInfo.DisplayOrder = if secretPity:IsA("ScreenGui") then secretPity.DisplayOrder else 30
+
+    local t17: {[any]: any} = {}
+    local connection = nil
+
+    secretPityInfo.Destroying:Once(function()
+        for key, value in t17 do
+            value:Cancel()
+        end
+
+        if connection ~= nil then
+            connection:Disconnect()
+        end
+    end)
+
+    local function play(p12, p13, p14)
+        local v709: Tween = tweenService:Create(p12, p13, p14)
+
+        table.insert(t17, v709)
+        v709:Play()
+    end
+
+    local backdrop: Instance = secretPity:FindFirstChild("Backdrop")
+
+    if backdrop ~= nil and backdrop:IsA("GuiObject") then
+        local clone: Instance = backdrop:Clone()
+        local cloneBackgroundTransparency = clone.BackgroundTransparency
+
+        clone.Visible = true
+        clone.BackgroundTransparency = 1
+        clone.Parent = secretPityInfo
+
+        local v264: Tween = tweenService:Create(clone, tweenInfo2, { BackgroundTransparency = cloneBackgroundTransparency })
+
+        table.insert(t17, v264)
+        v264:Play()
+
+        if clone:IsA("GuiButton") then
+            clone.Activated:Connect(function()
+                soundController:PlayCue("MenuClose")
+
+                if u125 ~= nil then
+                    u125:Destroy()
+                    u125 = nil
+                end
+            end)
+        end
+    end
+
+    local clone = v256:Clone()
+
+    clone.Visible = true
+    clone:SetAttribute("TS2StrokeScaleExempt", true)
+    v256 = { egg = ("%* Egg"):format(p9) }
+
+    for iterFirst, iterSecond in clone:GetDescendants() do
+        if iterSecond:IsA("TextLabel") then
+            iterSecond.Text = string.gsub(iterSecond.Text, "{(%w+)}", function(p15)
+                return v256[p15]
+            end)
+        end
+    end
+
+    local hatchRulesConfigIsPityGuaranteed = hatchRulesConfig.IsPityGuaranteed
+    local v269 = dataController:GetReplica()
+
+    v269 = if not hatchRulesConfigIsPityGuaranteed(v269.Data.Eggs, p9) and next(hatchRulesConfig.GetEarlierIslandSecrets(p9)) ~= nil then hatchRulesConfig.PityEarlierIslandChance else 0
+
+    local foundChild = clone:FindFirstChild("Rows", true)
+
+    for iterFirst2, iterSecond2 in { CurrentEgg = 1 - v269, EarlierIslands = v269 }, nil, nil do
+        local v273 = if foundChild == nil then nil else foundChild:FindFirstChild(iterFirst2)
+
+        if v273 ~= nil and v273:IsA("GuiObject") then
+            local percent = v273:FindFirstChild("Percent")
+
+            if percent ~= nil and percent:IsA("TextLabel") then
+                percent.Text = ("%*%%"):format((math.round(iterSecond2 * 100)))
+            end
+
+            if iterSecond2 <= 0 and v273.Visible then
+                v273.Visible = false
+
+                local uiListLayout = foundChild:FindFirstChildWhichIsA("UIListLayout")
+                local offset = clone.Size.Y.Offset
+                local cloneSize = clone.Size
+                local v278 = UDim2.fromOffset(0, v273.Size.Y.Offset + (if uiListLayout == nil then 0 else uiListLayout.Padding.Offset))
+
+                clone.Size = cloneSize - v278
+
+                for iterFirst3, iterSecond3 in clone:GetChildren() do
+                    local uIStroke = if iterSecond3:IsA("GuiObject") and iterSecond3.Size.Y.Scale == 1 then iterSecond3:FindFirstChildWhichIsA("UIStroke") else nil
+
+                    if uIStroke ~= nil and uIStroke.StrokeSizingMode == Enum.StrokeSizingMode.ScaledSize then
+                        uIStroke.Thickness = uIStroke.Thickness * (offset / clone.Size.Y.Offset)
+                    end
+                end
+            else
+                local icon = v273:FindFirstChild("Icon")
+
+                if icon ~= nil and icon:IsA("GuiObject") then
+                    local iconPosition = icon.Position
+                    local v284 = UDim2.fromOffset(0, 5)
+                    local v285: Tween = tweenService:Create(icon, tweenInfo4, { Position = iconPosition - v284 })
+
+                    table.insert(t17, v285)
+                    v285:Play()
+
+                    local view = icon:FindFirstChild("View")
+
+                    if view ~= nil and view:IsA("ViewportFrame") then
+                        local visible = not touchLayout.Touch and objectiveIcons.ShowEgg(view, p9)
+
+                        view.Visible = visible
+
+                        local image = icon:FindFirstChild("Image")
+
+                        if visible and image ~= nil and image:IsA("GuiObject") then
+                            image.Visible = false
+                        end
+
+                        local basePart = if visible then view:FindFirstChildWhichIsA("BasePart") else nil
+
+                        if basePart ~= nil then
+                            local n1: number = 0
+
+                            connection = runService.RenderStepped:Connect(function(deltaTime: number)
+                                n1 += deltaTime * 0.7
+                                basePart.CFrame = CFrame.Angles(0, n1, 0)
+                            end)
+                        end
+                    end
+
+                    local mark = icon:FindFirstChild("Mark")
+                    local uIScale = if mark == nil then nil else mark:FindFirstChildWhichIsA("UIScale")
+
+                    if uIScale ~= nil then
+                        local v293: Tween = tweenService:Create(uIScale, tweenInfo5, { Scale = uIScale.Scale * 1.15 })
+
+                        table.insert(t17, v293)
+                        v293:Play()
+                    end
+                end
+            end
+        end
+    end
+
+    local rays = clone:FindFirstChild("Rays")
+
+    if rays ~= nil and rays:IsA("GuiObject") then
+        local v295: Tween = tweenService:Create(rays, tweenInfo3, { Rotation = rays.Rotation + 360 })
+
+        table.insert(t17, v295)
+        v295:Play()
+    end
+
+    local close = clone:FindFirstChild("Close")
+    local v297 = if close == nil then nil else close:FindFirstChild("Button")
+
+    if close ~= nil and v297 ~= nil and v297:IsA("GuiButton") then
+        buttonEffects:Bind(v297, true)
+        v297.Activated:Connect(closeButtonStyle.AfterPress(close, closePityInfo))
+    end
+
+    local uiScale = clone:FindFirstChildWhichIsA("UIScale")
+
+    if uiScale ~= nil then
+        uiScale.Scale = p10 * 0.5
+
+        local v299: Tween = tweenService:Create(uiScale, tweenInfo, { Scale = p10 })
+
+        table.insert(t17, v299)
+        v299:Play()
+    end
+
+    clone.Parent = secretPityInfo
+    secretPityInfo.Parent = u62
+    u125 = secretPityInfo
+    u126 = p11
+end
+local function clearBillboard()
+    if u126 and u125 ~= nil then
+        u125:Destroy()
+        u125 = nil
+    end
+
+    if u64 ~= nil then
+        eggCostSigns.SetUIOpen(u64, false)
+    end
+
+    inputController:PopLayer("EggBillboard")
+    unbindGamepadHatches()
+    eggMenuPad.Detach()
+
+    if u67 ~= nil then
+        u67:Destroy()
+        u67 = nil
+        workspace:SetAttribute("TS2EggMenuOpen", false)
+        workspace:SetAttribute("TS2EggMenuEgg", nil)
+    end
+
+    u66 = nil
+    u64 = nil
+end
+local function dismissBillboard()
+    u65 = u64
+    eggMenuPad.Forget()
+    clearBillboard()
+end
+local function requiredHatchPass(p17, p18)
+    if p18 > 3 and not gamepassPerks.Has(p17, "x8Egg") and not boostFormula.HasType(p17, "OctoHatch") then
+        return "x8Egg"
+    end
+
+    return nil
+end
+local function godlyOwned(p19)
+    local v303 = p19.Items.Owned[godlyHatchConfig.ItemName]
+
+    if type(v303) == "number" then
+        return v303
+    end
+
+    return 0
+end
+local function aheadLead()
+    local n1 = 0.25
+
+    if #t2 > 0 then
+        n1 = 0
+
+        for key, value in t2 do
+            n1 = math.max(n1, value)
+        end
+    end
+
+    return (math.min(n1 + 0.1, 1))
+end
+local function noteAnswer(p20)
+    if u79 and (p20.Seq == nil or p20.Seq == n1) then
+        u79 = false
+
+        local v308 = if type(p20.Held) == "number" and p20.Held == p20.Held then math.clamp(p20.Held, 0, 30) else 0
+        local v309 = os.clock()
+        local v310 = math.clamp(v309 - n3 - v308, 0, 1)
+
+        table.insert(t2, v310)
+
+        if #t2 > 5 then
+            table.remove(t2, 1)
+        end
+
+        return
+    end
+end
+
+local t12: {[any]: any} = { Failures = 0, Max = 2 }
+local u141 = nil
+
+local function protect(p21, ...)
+    local v312, v313 = xpcall(p21, debug.traceback, ...)
+
+    if not v312 then
+        task.spawn(error, v313, 0)
+    end
+
+    return v312
+end
+local function sendHatchRequest(p22, p23, p24)
+    hatchEggShell.Prepare(p22)
+    u72 = true
+    u79 = true
+    n3 = os.clock()
+    n1 += 1
+
+    local v317: number = n1
+
+    task.delay(12, function()
+        if n1 ~= v317 or not u79 then
+            return
+        end
+
+        u79 = false
+
+        if u77 then
+            return
+        end
+
+        u72 = false
+
+        if u93 == nil then
+            return
+        end
+
+        if t12.Failures < t12.Max then
+            local v712: {[any]: any} = t12
+
+            v712.Failures = v712.Failures + 1
+            task.defer(u141)
+
+            return
+        end
+
+        u93 = nil
+        workspace:SetAttribute("TS2AutoOpen", nil)
+        v59.StopOfflineHatch:Fire()
+        hatchRenderer:FlushHudRestore()
+        refreshAutoHatchHud()
+        notificationController:Notify("Auto-hatch stopped: the server didn't answer. Turn it back on to keep hatching.", Color3.fromRGB(255, 200, 80))
+    end)
+    t8.Rebirths = dataController:GetReplica().Data.Statistics.Rebirths or 0
+    t8.Since = nil
+    v59.EggHatchRequested:Fire({
+        Egg = p22,
+        Count = p23,
+        Auto = not p24 and (if p22 == u93 then true else false),
+        Godly = if p24 then true else nil,
+        Seq = v317
+    })
+end
+local function requestHatch(p25, p26, p27)
+    local v321 = dataController:GetReplica().Data
+    local s1 = if p26 > 3 and not gamepassPerks.Has(v321, "x8Egg") and not boostFormula.HasType(v321, "OctoHatch") then "x8Egg" else nil
+
+    if s1 == nil then
+        if u72 or u73 then
+            return
+        end
+
+        if p27 then
+            local v323 = v321.Items.Owned[godlyHatchConfig.ItemName]
+
+            if p26 > (if type(v323) == "number" then v323 else 0) then
+                soundController:Play("Broke")
+
+                local v324 = v321.Items.Owned[godlyHatchConfig.ItemName]
+                local typeName: string = type(v324)
+                local v326 = ("You need %* Godly Hatch%* for this! You have %*."):format(p26, if p26 == 1 then "" else "es", if typeName == "number" then v324 else 0)
+
+                notificationController:Notify(v326, Color3.fromRGB(255, 64, 64))
+
+                return
+            end
+
+            sendHatchRequest(p25, p26, p27)
+
+            return
+        end
+
+        sendHatchRequest(p25, p26, p27)
+
+        return
+    end
+
+    monetizationController:RequestPurchase(s1)
+end
+local function autoDeleteBelowFor(p28)
+    local autoDeleteBelow = dataController:GetReplica().Data.Eggs.AutoDeleteBelow
+    local v329 = if type(autoDeleteBelow) == "table" then autoDeleteBelow[p28] else nil
+
+    if hatchRulesConfig.IsValidAutoDeleteBelow(v329) then
+        return v329
+    end
+
+    return 0
+end
+local function selectedTierLabel()
+    return t9[s2] or "Normal"
+end
+local function formatChance(p29)
+    local n1 = math.floor(p29 * 10000 + 0.5) / 100
+
+    if n1 >= 0.1 then
+        return (("%*%%"):format(n1))
+    end
+
+    local floored = math.floor(1 / p29 + 0.5)
+
+    return (("1 in %*"):format((formatNumber:Commas(floored))))
+end
+local function formatPrice(p30)
+    if p30 > 999999 then
+        return (formatNumber:Abbreviate(p30, true))
+    end
+
+    return (formatNumber:Commas(p30))
+end
+local function buyProgress(p31, p32)
+    if p32 > 0 then
+        return (math.clamp(p31 / p32, 0, 1))
+    end
+
+    return 1
+end
+local function updateButtonStates()
+    if u67 == nil or u64 == nil then
+        return
+    end
+
+    local v336 = launchEggConfig[u64.Name]
+
+    if v336 == nil then
+        return
+    end
+
+    local v337 = dataController:GetReplica().Data
+    local v338 = v337.Currencies.Coins or 0
+    local v339 = eggPricing.GetUnitPrice(v337, u64.Name, v336.Price)
+    local v340 = u67
+    local v341 = if v339 > 999999 then formatNumber:Abbreviate(v339, true) else formatNumber:Commas(v339)
+    local v342 = if v339 > 0 then math.clamp(v338 / v339, 0, 1) else 1
+
+    v340:SetPrice(v341, v342)
+    v340 = v337.Items.Owned[godlyHatchConfig.ItemName]
+    v339 = if type(v340) == "number" then v340 else 0
+
+    if v339 <= 0 and u67:IsGodlyMode() then
+        u69 = nil
+        u67:SetGodlyMode(false)
+    end
+
+    v340 = u67:IsGodlyMode()
+    u67:SetGodlyCount(v339)
+
+    for key, value in t4 do
+        local v345 = eggPricing.GetTotal(v337, u64.Name, v336.Price, value)
+        local s1: string = if (if value > 3 and not gamepassPerks.Has(v337, "x8Egg") and not boostFormula.HasType(v337, "OctoHatch") then "x8Egg" else nil) == nil then if v338 >= v345 then "Ready" else "Broke" else "Locked"
+
+        if v340 and s1 ~= "Locked" and v339 < value then
+            local v347 = u67
+            local v348 = ("Need %*"):format(value)
+
+            v347:SetHatchButton(key, "Broke", v348, godlyHatchConfig.Image)
+        else
+            local v349 = u67
+            local v350 = if v345 > 999999 then formatNumber:Abbreviate(v345, true) else formatNumber:Commas(v345)
+
+            v349:SetHatchButton(key, s1, v350)
+        end
+    end
+end
+local function formatTimeCompressed(p33)
+    local n1 = p33 % 86400 / 3600
+    local n2 = p33 % 3600 / 60
+    local n3 = p33 % 60
+
+    if n1 >= 1 then
+        return (("%*h"):format(math.floor(n1 * 10) / 10))
+    end
+
+    if n2 >= 1 then
+        return (("%*m"):format(math.floor(n2 * 10) / 10))
+    end
+
+    if n3 >= 1 then
+        return (("%*s"):format((math.floor(n3))))
+    end
+
+    return "0"
+end
+local function boostTooltip(p34)
+    if p34 == "Electric" then
+        return "<font color=\"rgb(100,200,255)\"><b>⚡ Electric</b></font>\n<font color=\"rgb(200,200,200)\">1.5x hatch speed from Blizzard</font>"
+    end
+
+    local v356 = v57[p34]
+    local v357 = ("Missing egg boost event definition: %*"):format(p34)
+    local v358 = assert(v356, v357)
+
+    return string.format("<font color=\"rgb(255,255,255)\"><b>%s</b></font>\n<font color=\"rgb(200,200,200)\">%s</font>", v358.Name, string.format(v358.Description, v58.GetMultiplier(p34)))
+end
+local function updateBoostFrames()
+    if u67 == nil or u64 == nil then
+        return
+    end
+
+    local t18: {[any]: any} = {}
+    local v360 = require(replicatedStorage.Modules.Client.Game.EventGate).IsFullyOpen()
+
+    for iterFirst, value in { "Mythic", "Luck" }, nil, nil do
+        local v363 = v58.GetEndsAt(value)
+        local v364: number = workspace:GetServerTimeNow()
+        local n1 = v363 - v364
+
+        if v360 and v58.IsActive(value) and n1 > 0 then
+            local v366 = v57[value]
+            local v367 = ("Missing egg boost event definition: %*"):format(value)
+            local v368 = assert(v366, v367)
+            local t19: {[any]: any} = { Key = value, Image = v368.Image, Tint = v370 }
+            local v370 = if value == "Luck" then Color3.fromRGB(100, 255, 100) else nil
+
+            t19.Text = formatTimeCompressed(n1)
+            table.insert(t18, t19)
+        end
+    end
+
+    local electricExpiry = u64:GetAttribute("ElectricExpiry")
+
+    if v360 and u64:GetAttribute("Electric") == true and type(electricExpiry) == "number" and electricExpiry - os.time() > 0 then
+        local image = assert(v57.Electric, "Missing Electric event definition").Image
+        local timestamp = os.time()
+        local v374 = formatTimeCompressed(electricExpiry - timestamp)
+
+        table.insert(t18, { Key = "Electric", Image = image, Text = v374 })
+    end
+
+    for iterFirst2, iterSecond in u67:SetBoosts(t18) do
+        tooltipController:Bind(iterSecond, boostTooltip(iterFirst2))
+    end
+
+    if u66 ~= nil then
+        u66:SetAttribute("TS2EggVisibleBoosts", #t18)
+    end
+end
+local function eggEntries(p35)
+    local v378 = launchEggConfig[p35]
+    local t20: {[any]: any} = {}
+
+    for iterFirst, iterSecond in v378.Pets, nil, nil do
+        table.insert(t20, { Secret = false, Name = iterFirst, Weight = iterSecond })
+    end
+
+    local secretHatchFormulaSecretsRevealed = secretHatchFormula.SecretsRevealed
+    local v383 = dataController:GetReplica()
+
+    if secretHatchFormulaSecretsRevealed(v383.Data.Pets.Index, v378) then
+        for iterFirst2, iterSecond2 in v378.Secrets, nil, nil do
+            table.insert(t20, { Secret = true, Name = iterFirst2, Weight = iterSecond2 })
+        end
+    end
+
+    for iterFirst3, iterSecond3 in require(replicatedStorage.Shared.Pets.BloodMoonEggPets).For(v378) or {}, nil, nil do
+        table.insert(t20, {
+            Secret = true,
+            BloodMoon = true,
+            Name = iterFirst3,
+            Weight = iterSecond3
+        })
+    end
+
+    table.sort(t20, function(p36, p37)
+        if p36.Secret ~= p37.Secret then
+            return not p36.Secret
+        end
+
+        if p36.BloodMoon == true ~= (p37.BloodMoon == true) then
+            return p37.BloodMoon == true
+        end
+
+        return p36.Weight > p37.Weight
+    end)
+
+    local n1 = 0
+
+    for key, value in t20 do
+        if not value.Secret then
+            n1 += value.Weight
+        end
+    end
+
+    return t20, n1
+end
+local function refreshPity()
+    local v391 = u67
+    local v392 = u64
+
+    if v391 == nil or v392 == nil then
+        return
+    end
+
+    local v393 = v392.Name
+    local v394 = dataController:GetReplica().Data
+    local v395
+
+    if not secretHatchFormula.SecretsRevealed(v394.Pets.Index, launchEggConfig[v393]) then
+        v395 = nil
+    else
+        local v396 = secretHatchFormula.GetDrought(v394.Eggs, v393)
+
+        v395 = if v396 < n5 then nil else v396
+    end
+
+    if v395 ~= nil ~= v391.ShowPity then
+        u108(v392)
+
+        return
+    end
+
+    v391:SetPity(v395, v392.Name)
+end
+local function refreshPets(p38)
+    local v398
+    local v399 = u67
+
+    if v399 == nil then
+        return
+    end
+
+    local v400 = dataController:GetReplica().Data
+    local v401, v402 = eggEntries(p38)
+
+    if #v401 == v399.PetCount or u64 == nil then
+        local v403 = v400.Eggs.AutoDelete[p38]
+        local t21 = if type(v403) == "table" then table.clone(v403) else {}
+
+        v403 = v400.Pets.Index
+
+        local autoDeleteBelow = dataController:GetReplica().Data.Eggs.AutoDeleteBelow
+        local v406 = if type(autoDeleteBelow) == "table" then autoDeleteBelow[p38] else nil
+        local v407 = hatchRulesConfig.IsValidAutoDeleteBelow(v406)
+        local v408 = require(replicatedStorage.Shared.Pets.PetOdds).TierFactors[s2] or 1
+        local t22: {[any]: any} = {}
+        local n1: number = 0
+
+        for iterFirst, iterSecond in v401 do
+            local v413 = launchPetConfig[iterSecond.Name]
+            local v414 = if v413 == nil then "Common" else v413.Rarity
+
+            if v403[iterSecond.Name] == true then
+                n1 += 1
+            end
+
+            v413 = hatchRulesConfig.AutoDeleteKey(iterSecond.Name, s2)
+
+            local u415: boolean = false
+
+            if s2 == "Normal" then
+                u415 = not iterSecond.Secret
+
+                if u415 then
+                    local v416 = hatchRulesConfig.GetRank(v414)
+
+                    u415 = (if v407 then v406 else 0) >= v416
+                end
+            end
+
+            local t23: {[any]: any} = { Name = iterSecond.Name, Rarity = v414, Tier = s2, Chance = v398 }
+
+            if iterSecond.Secret then
+                local v398 = ("1 in %*"):format((formatNumber:Commas(iterSecond.Weight * v408)))
+            else
+                local n2 = iterSecond.Weight / v402 / v408
+                local n3 = math.floor(n2 * 10000 + 0.5) / 100
+
+                v398 = if n3 >= 0.1 then ("%*%%"):format(n3) else ("1 in %*"):format((formatNumber:Commas((math.floor(1 / n2 + 0.5)))))
+            end
+
+            t23.Discovered = petIndexCatalog.Discovered(v400.Pets, iterSecond.Name, s2)
+            t23.BloodMoon = iterSecond.BloodMoon == true
+            t23.DeleteState = if table.find(t21, v413) == nil then if u415 then "Threshold" else "Off" else "Explicit"
+            t23.DeleteKey = v413
+            t23.Threshold = u415
+            t23.Secret = iterSecond.Secret
+            table.insert(t22, t23)
+        end
+
+        local v420 = v399:SetPets(t22)
+
+        for key, value in t22 do
+            local v423 = v420[key]
+
+            v423.Frame:SetAttribute("AutoDeleteKey", value.DeleteKey)
+
+            local s1 = if value.Tier == "Normal" then "" else ("%* "):format(t9[s2] or "Normal")
+
+            local function enable()
+                if table.find(t21, value.DeleteKey) == nil then
+                    soundController:PlayCue("EggAutoDeleteOn")
+                    table.insert(t21, value.DeleteKey)
+                    v423:SetDeleteState("Explicit", true)
+
+                    local v715 = ("Auto deleting %*%*"):format(s1, value.Name)
+
+                    notificationController:Notify(v715, Color3.fromRGB(255, 64, 64))
+
+                    local autoDeleteRequested = v59.AutoDeleteRequested
+                    local v717 = table.clone(t21)
+
+                    autoDeleteRequested:Fire({ Egg = p38, Entries = v717 })
+
+                    return
+                end
+            end
+            local function toggle()
+                local v718 = table.find(t21, value.DeleteKey)
+
+                if v718 == nil and value.Secret then
+                    local messageController = require(replicatedStorage.Controllers.UI.MessageController)
+                    local v720 = ("%*%* is a SECRET pet! Every one you hatch from this egg will be deleted."):format(s1, value.Name)
+
+                    messageController:ShowConfirm({
+                        Title = "Delete a Secret?",
+                        ConfirmText = "Delete",
+                        CancelText = "Cancel",
+                        ConfirmDelay = 3,
+                        Description = v720,
+                        OnConfirm = enable
+                    })
+
+                    return
+                end
+
+                if v718 == nil then
+                    enable()
+
+                    return
+                end
+
+                soundController:PlayCue("EggAutoDeleteOff")
+                table.remove(t21, v718)
+                v423:SetDeleteState(if value.Threshold then "Threshold" else "Off")
+
+                local autoDeleteRequested = v59.AutoDeleteRequested
+                local v722 = table.clone(t21)
+
+                autoDeleteRequested:Fire({ Egg = p38, Entries = v722 })
+            end
+
+            v423.Toggle = toggle
+
+            for iterFirst2, iterSecond2 in v423.Buttons, nil, nil do
+                buttonEffects:Bind(iterSecond2, true)
+                iterSecond2.Activated:Connect(toggle)
+            end
+        end
+
+        v399:SetNotice(nil)
+        v399.Billboard:SetAttribute("TS2EggDiscoveredPets", n1)
+        v399.Billboard:SetAttribute("TS2EggCardTemplate", "Content.UI.Pet")
+        v399.Billboard:SetAttribute("TS2EggVisiblePets", #v401)
+
+        return
+    end
+
+    u108(u64)
+end
+local function pickAutoHatchCount(p39)
+    local v430 = launchEggConfig[p39]
+
+    if v430 == nil then
+        return nil
+    end
+
+    local v431 = dataController:GetReplica().Data
+    local v432 = v431.Currencies.Coins or 0
+
+    if (if not gamepassPerks.Has(v431, "x8Egg") and not boostFormula.HasType(v431, "OctoHatch") then "x8Egg" else nil) == nil and v432 >= eggPricing.GetTotal(v431, p39, v430.Price, 8) then
+        return 8
+    end
+
+    if v432 >= eggPricing.GetTotal(v431, p39, v430.Price, 3) then
+        return 3
+    end
+
+    if v432 >= eggPricing.GetUnitPrice(v431, p39, v430.Price) then
+        return 1
+    end
+
+    return nil
+end
+local function stopAutoHatch(p40, p41)
+    t8.Since = nil
+    t8.Owed = false
+
+    if u93 == nil then
+        return
+    end
+
+    u93 = nil
+    workspace:SetAttribute("TS2AutoOpen", nil)
+    v59.StopOfflineHatch:Fire()
+    hatchRenderer:FlushHudRestore()
+    refreshAutoHatchHud()
+
+    if p40 ~= nil then
+        local v435 = p41 or Color3.fromRGB(255, 200, 80)
+
+        notificationController:Notify(p40, v435)
+    end
+end
+local function waitForCoins()
+    local v436 = dataController:GetReplica().Data
+    local owedRebirths = v436.Statistics.Rebirths or 0
+
+    if owedRebirths > t8.Rebirths and owedRebirths > t8.OwedRebirths then
+        t8.Owed = true
+        t8.OwedAt = os.clock()
+        t8.OwedCoins = v436.Currencies.Coins or 0
+        t8.OwedRebirths = owedRebirths
+    end
+
+    local u438: boolean = true
+
+    if v436.Settings.AutoClickerEnabled ~= true then
+        u438 = os.clock() - t8.LastInput < v105.Idle
+    end
+
+    return u438
+end
+
+u141 = function()
+    local v439 = u93
+
+    if v439 == nil or u72 then
+        return
+    end
+
+    local v440 = pickAutoHatchCount(v439)
+
+    if v440 == nil then
+        if not waitForCoins() then
+            stopAutoHatch("Auto-hatch stopped: not enough coins", Color3.fromRGB(255, 64, 64))
+
+            return
+        end
+
+        local v441 = os.clock()
+
+        t8.Since = t8.Since or v441
+
+        if v441 - t8.Since >= v105.Hud and not u110 and not secretHatchRenderer:IsPlaying() and not secretHatchCutscenes:IsPlaying() then
+            hatchRenderer:FlushHudRestore()
+        end
+
+        if not t8.Polling then
+            t8.Polling = true
+            task.delay(v105.Poll, function()
+                t8.Polling = false
+                u141()
+            end)
+        end
+
+        return
+    end
+
+    local v442 = dataController:GetReplica().Data
+    local s1 = if v440 > 3 and not gamepassPerks.Has(v442, "x8Egg") and not boostFormula.HasType(v442, "OctoHatch") then "x8Egg" else nil
+
+    if s1 == nil then
+        if u72 then
+            return
+        end
+
+        if u73 then
+            return
+        end
+
+        sendHatchRequest(v439, v440, nil)
+
+        return
+    end
+
+    monetizationController:RequestPurchase(s1)
+end
+
+local function sendAhead()
+    local v444 = u93
+
+    if v444 == nil or v444 ~= u95 or not not u79 or #t1 > 0 or u73 then
+        return
+    end
+
+    local v445 = pickAutoHatchCount(v444)
+
+    if v445 == nil then
+        return
+    end
+
+    sendHatchRequest(v444, v445)
+end
+local function watchAhead(p42)
+    task.spawn(function()
+        while n2 == p42 and u77 do
+            local v723 = hatchRenderer:GetEndsAt()
+
+            if v723 ~= nil then
+                local v724 = os.clock()
+                local n1 = 0.25
+
+                if #t2 > 0 then
+                    n1 = 0
+
+                    for key, value in t2 do
+                        n1 = math.max(n1, value)
+                    end
+                end
+
+                local v728 = math.min(n1 + 0.1, 1)
+
+                if v724 >= v723 - v728 then
+                    local v729 = u93
+
+                    if v729 == nil or v729 ~= u95 or not not u79 or #t1 > 0 then
+                        return
+                    end
+
+                    if u73 then
+                        return
+                    end
+
+                    local v730 = pickAutoHatchCount(v729)
+
+                    if v730 == nil then
+                        return
+                    end
+
+                    sendHatchRequest(v729, v730)
+
+                    return
+                end
+            end
+
+            runService.Heartbeat:Wait()
+        end
+    end)
+end
+local function startAutoHatch(p43, p44, p45)
+    if u73 then
+        return
+    end
+
+    if u93 == nil then
+        t8.Rebirths = dataController:GetReplica().Data.Statistics.Rebirths or 0
+        t8.Since = nil
+        t8.Owed = false
+
+        if pickAutoHatchCount(p43) == nil and (not p45 or not waitForCoins()) then
+            soundController:Play("Broke")
+            notificationController:Notify("Not enough coins to auto-hatch", Color3.fromRGB(255, 64, 64))
+
+            return
+        end
+
+        u93 = p43
+        workspace:SetAttribute("TS2AutoOpen", p43)
+        refreshAutoHatchHud()
+
+        local v451
+
+        if not offlineHatchConfig.Enabled then
+            v451 = ("Auto-hatching the %* Egg."):format(p43)
+        elseif not touchLayout.Touch then
+            v451 = ("Auto-hatching the %* Egg. Leave it running to keep hatching offline at %*!"):format(p43, offlineHatchConfig.SpeedLabel)
+        else
+            local v452 = dataController:GetReplica()
+            local u452: boolean = true
+
+            if v452 ~= nil then
+                u452 = v452.Data.Offline.HatchOff ~= true
+            end
+
+            local v453 = u102
+            local v454
+
+            if v453 == nil then
+                v454 = u452
+            elseif u452 == v453.On or not (os.clock() - v453.At < 5) then
+                u102 = nil
+                v454 = u452
+            else
+                v454 = v453.On
+            end
+
+            v451 = if v454 then ("Offline hatch enabled for this egg at %*!"):format(offlineHatchConfig.RateLabel) else ("Auto-hatching the %* Egg. Offline hatch is off."):format(p43)
+        end
+
+        notificationController:Notify(p44 or v451, Color3.fromRGB(61, 255, 140))
+        u141()
+
+        return
+    end
+
+    stopAutoHatch("Auto-hatch off")
+end
+local function clickAutoHatch(p46)
+    local u456: boolean = u93 ~= nil
+
+    startAutoHatch(p46)
+
+    local u457: boolean = u93 ~= nil
+
+    if u457 ~= u456 then
+        soundController:PlayCue(if u457 then "AutoOn" else "AutoOff")
+    end
+end
+local function initAutoHatchHud()
+    local hatching = u62:WaitForChild("Hatching")
+    local main = hatching:WaitForChild("Main")
+    local auto = main:WaitForChild("Auto")
+    local autoMain = auto:WaitForChild("Main")
+    local autoButton = auto:WaitForChild("Button")
+    local icon2 = autoMain:WaitForChild("Icon2")
+
+    hatching.ResetOnSpawn = false
+    hatching.DisplayOrder = 50
+    hatching:SetAttribute(screenHide.HATCH_LAYER, true)
+    main.Visible = true
+    main.AnchorPoint = Vector2.new(0.5, 1)
+
+    if touchLayout.Touch then
+        local uiListLayout = main:FindFirstChildWhichIsA("UIListLayout")
+
+        if uiListLayout ~= nil then
+            uiListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        end
+
+        local y = main.Position.Y
+
+        main.Position = UDim2.new(0.5, 0, y.Scale, y.Offset)
+    end
+
+    auto.Visible = true
+
+    local autoCraft = main:FindFirstChild("AutoCraft")
+
+    if autoCraft ~= nil and autoCraft:IsA("GuiObject") then
+        autoCraft.Visible = false
+    end
+
+    u94 = hatching
+    u96 = autoMain
+
+    local t24 = { auto }
+    local offline = auto:FindFirstChild("Offline")
+
+    if offline ~= nil and offline:IsA("Frame") then
+        u99 = offline
+        offline.Visible = false
+        table.insert(t24, offline)
+
+        local button = offline:FindFirstChild("Button")
+
+        if button ~= nil and button:IsA("GuiButton") then
+            buttonEffects:Bind(button, true)
+            button.Activated:Connect(function()
+                if not offline.Visible then
+                    return
+                end
+
+                local v731 = dataController:GetReplica()
+                local u732: boolean = true
+
+                if v731 ~= nil then
+                    u732 = v731.Data.Offline.HatchOff ~= true
+                end
+
+                local v733 = u102
+                local v734
+
+                if v733 == nil then
+                    v734 = u732
+                elseif u732 == v733.On or not (os.clock() - v733.At < 5) then
+                    u102 = nil
+                    v734 = u732
+                else
+                    v734 = v733.On
+                end
+
+                local u735: boolean = not v734
+                local v736 = os.clock()
+                u102 = { On = u735, At = v736 }
+                soundController:PlayCue(if u735 then "AutoOn" else "AutoOff")
+                v59.SetOfflineHatch:Fire({ Touch = touchLayout.Touch, Off = not u735 })
+
+                local v737 = if u735 then ("Offline hatch enabled for this egg at %*!"):format(offlineHatchConfig.RateLabel) else "Offline hatch off: nothing hatches while you're away."
+                local v738 = if u735 then Color3.fromRGB(61, 255, 140) else Color3.fromRGB(255, 200, 80)
+
+                notificationController:Notify(v737, v738)
+                refreshAutoHatchHud()
+            end)
+        end
+    end
+
+    autoHatchPityBar.Start(u62, hatching.DisplayOrder, t24, function(p47)
+        local v740 = u93
+
+        if v740 == nil then
+            return
+        end
+
+        soundController:PlayCue("ButtonPress")
+
+        if u125 == nil then
+            openPityInfo(v740, p47, false)
+        elseif u125 ~= nil then
+            u125:Destroy()
+            u125 = nil
+
+            return
+        end
+    end)
+    icon2.Rotation = 0
+
+    local tweenInfo6 = TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, -1)
+
+    u97 = tweenService:Create(icon2, tweenInfo6, { Rotation = 360 })
+    refreshAutoHatchHud()
+    t24 = function(p48)
+        if not hatching.Enabled then
+            return
+        end
+
+        local v742 = u93 or u95
+
+        if v742 == nil then
+        elseif p48 then
+            local u743: boolean = u93 ~= nil
+
+            startAutoHatch(v742)
+
+            local u744: boolean = u93 ~= nil
+
+            if u744 ~= u743 then
+                soundController:PlayCue(if u744 then "AutoOn" else "AutoOff")
+
+                return
+            end
+        else
+            startAutoHatch(v742)
+        end
+    end
+    buttonEffects:Bind(autoButton, true)
+    inputController:BindHint(auto, Enum.KeyCode.ButtonL1)
+    autoButton.Activated:Connect(function()
+        if not hatching.Enabled then
+            return
+        end
+
+        local v745 = u93 or u95
+
+        if v745 == nil then
+            return
+        end
+
+        local u746: boolean = u93 ~= nil
+
+        startAutoHatch(v745)
+
+        local u747: boolean = u93 ~= nil
+
+        if u747 ~= u746 then
+            soundController:PlayCue(if u747 then "AutoOn" else "AutoOff")
+        end
+    end)
+    contextActionService:BindActionAtPriority("TS2_HatchAutoToggle", function(_, p50)
+        if hatching.Enabled and not inputController:IsWorldInputBlocked() and not userInputService:GetFocusedTextBox() then
+            if p50 == Enum.UserInputState.Begin and hatching.Enabled then
+                local v750 = u93 or u95
+
+                if v750 ~= nil then
+                    startAutoHatch(v750)
+                end
+            end
+
+            return Enum.ContextActionResult.Sink
+        end
+
+        return Enum.ContextActionResult.Pass
+    end, false, Enum.ContextActionPriority.High.Value + 1, Enum.KeyCode.F, Enum.KeyCode.ButtonL1)
+end
+local function nearestEgg(p51)
+    local v472 = nil
+    local n1 = 10
+
+    for iterFirst, iterSecond in u63:GetChildren() do
+        if iterSecond:IsA("Model") and launchEggConfig[iterSecond.Name] ~= nil then
+            local v476 = eggPart(iterSecond)
+
+            if v476 ~= nil then
+                local magnitude = ((eggIdleAnimation.GetPosition(iterSecond) or v476.Position) - p51.Position).Magnitude
+
+                if n1 > magnitude then
+                    v472 = iterSecond
+                    n1 = magnitude
+                end
+            end
+        end
+    end
+
+    return v472
+end
+local function inAutoHatchReach(p52, p53, p54)
+    if p54 == nil then
+        local foundChild = u63:FindFirstChild(p53)
+        local v482 = if foundChild ~= nil and foundChild:IsA("Model") then eggPart(foundChild) else nil
+
+        if v482 == nil then
+            return false
+        end
+
+        return ((eggIdleAnimation.GetPosition(foundChild) or v482.Position) - p52.Position).Magnitude <= offlineHatchConfig.ResumeRange + 6
+    end
+
+    return p53 == p54.Name
+end
+
+u108 = function(p55)
+    clearBillboard()
+
+    local v484 = launchEggConfig[p55.Name]
+
+    if v484 == nil then
+        return
+    end
+
+    local v485 = eggPart(p55)
+
+    if v485 == nil then
+        return
+    end
+
+    local CurrentCamera: Camera = workspace.CurrentCamera
+    local v487 = eggEntries(p55.Name)
+    local v488 = p55.Name
+    local v489 = dataController:GetReplica().Data
+    local v490
+
+    if not secretHatchFormula.SecretsRevealed(v489.Pets.Index, launchEggConfig[v488]) then
+        v490 = nil
+    else
+        local v491 = secretHatchFormula.GetDrought(v489.Eggs, v488)
+
+        v490 = if v491 < n5 then nil else v491
+    end
+
+    if u68 ~= p55.Name then
+        u68 = nil
+    end
+
+    if u69 ~= p55.Name then
+        u69 = nil
+    end
+
+    local eggMenuViewNew = eggMenuView.new
+    local name = ("TS2_%*_EggBillboard"):format(p55.Name)
+    local v494 = ("TS2_%*_EggPrompt"):format(p55.Name)
+    local n1 = v485.Size.Y / 2 - 0.2
+    local v496 = ("%* Egg"):format(p55.Name)
+
+    v488 = eggMenuViewNew({
+        Name = name,
+        PromptName = v494,
+        AnchorHeight = n1,
+        Title = v496,
+        PetCount = #v487,
+        ShowPity = if v490 == nil then false else true,
+        Adornee = v485,
+        Viewport = if CurrentCamera == nil then Vector2.new(1920, 1080) else CurrentCamera.ViewportSize,
+        StrokeRatio = uiStrokeController:GetRatio()
+    })
+
+    local billboard = v488.Billboard
+
+    v488.Main:SetAttribute("MenuEntranceTimeScale", 0.55)
+    v488.Main:SetAttribute("MenuEntranceDirection", "Bottom")
+    billboard.Parent = u62
+    v488.Prompt.Parent = u62
+    u64 = p55
+    u67 = v488
+    u66 = billboard
+    workspace:SetAttribute("TS2EggMenuOpen", true)
+    workspace:SetAttribute("TS2EggMenuEgg", p55.Name)
+
+    local v498 = dataController:GetReplica().Data.Items.Owned[godlyHatchConfig.ItemName]
+    local typeName: string = type(v498)
+
+    v488:SetGodlyCount(if typeName == "number" then v498 else 0)
+    v485 = dataController:GetReplica().Data
+    v489 = eggPricing.GetUnitPrice(v485, p55.Name, v484.Price)
+
+    local v500 = if v489 > 999999 then formatNumber:Abbreviate(v489, true) else formatNumber:Commas(v489)
+    local v501 = if v489 > 0 then math.clamp((v485.Currencies.Coins or 0) / v489, 0, 1) else 1
+
+    v488:SetPrice(v500, v501)
+    v489 = v485.Progression.UnlockedIslands["Sky Island"] == true
+
+    if not v489 then
+        s2 = "Normal"
+    end
+
+    v488:SetTierShown(v489)
+    v488:SetTier(s2)
+    refreshPets(p55.Name)
+    v488:SetPity(v490, p55.Name)
+    v488:BindTierSelect(function(p56)
+        if u67 ~= v488 then
+            return
+        end
+
+        if p56 == s2 then
+            soundController:PlayCue("EggTierMenu")
+
+            return
+        end
+
+        s2 = p56
+        soundController:PlayCue("EggTierPick")
+        v488:SetTier(p56)
+        refreshPets(p55.Name)
+
+        local v752 = ("Switched to %*! Select pets to auto delete"):format((eggMenuView.TierRichText(p56)))
+
+        notificationController:Notify(v752)
+    end)
+    v489 = function(p57)
+        u68 = if p57 then p55.Name else nil
+        v488:SetRingOpen(p57)
+    end
+
+    local function primaryHatch()
+        if u67 ~= v488 then
+            return
+        end
+
+        if v488:IsRingOpen() then
+            requestHatch(p55.Name, 1, v488:IsGodlyMode())
+
+            return
+        end
+
+        soundController:PlayCue("EggRingOpen")
+        u68 = p55.Name
+        v488:SetRingOpen(true)
+    end
+
+    if eggMenuView.Stacked or u68 == p55.Name then
+        v488:SetRingOpen(true)
+    end
+
+    local v503
+    local v504: boolean = u69 == p55.Name
+
+    if v504 then
+        v503 = dataController:GetReplica().Data.Items.Owned[godlyHatchConfig.ItemName]
+    end
+
+    if not v504 or not ((if type(v503) == "number" then v503 else 0) > 0) then
+        u69 = nil
+    else
+        v488:SetGodlyMode(true)
+    end
+
+    v484 = function()
+        if u67 ~= v488 then
+            return
+        end
+
+        local u754: boolean = not v488:IsGodlyMode()
+
+        if u754 then
+            local v755 = dataController:GetReplica().Data.Items.Owned[godlyHatchConfig.ItemName]
+
+            if (if type(v755) == "number" then v755 else 0) <= 0 then
+                return
+            end
+        end
+
+        if not v488:IsRingOpen() then
+            u68 = p55.Name
+            v488:SetRingOpen(true)
+        end
+
+        soundController:PlayCue(if u754 then "EggTierPick" else "EggTierMenu")
+        u69 = if u754 then p55.Name else nil
+        v488:SetGodlyMode(u754)
+        updateButtonStates()
+    end
+
+    local godlyButton = v488.GodlyButton
+
+    buttonEffects:Bind(godlyButton.Button, true)
+    inputController:BindHint(godlyButton.Frame, Enum.KeyCode.DPadUp, godlyButton.KeyLabel)
+    godlyButton.Button.Activated:Connect(v484)
+    v488.PromptButton.Activated:Connect(function()
+        if u67 ~= v488 then
+            return
+        end
+
+        local u756: boolean = not v488:IsRingOpen()
+
+        soundController:PlayCue(if u756 then "EggRingOpen" else "EggRingClose")
+        u68 = if u756 then p55.Name else nil
+        v488:SetRingOpen(u756)
+    end)
+    buttonEffects:Bind(v488.TierToggle, true)
+    v488.TierToggle.Activated:Connect(function()
+        if u67 ~= v488 then
+            return
+        end
+
+        soundController:PlayCue("EggTierMenu")
+    end)
+    inputController:BindHint(v488.TierButton, Enum.KeyCode.DPadDown)
+
+    local pityHelp = v488.PityHelp
+
+    if pityHelp ~= nil and pityHelp:IsA("GuiButton") then
+        pityHelp.Activated:Connect(function()
+            if u67 ~= v488 then
+                return
+            end
+
+            soundController:PlayCue("ButtonPress")
+
+            if u125 == nil then
+                openPityInfo(p55.Name, v488.PromptScale, true)
+            elseif u125 ~= nil then
+                u125:Destroy()
+                u125 = nil
+
+                return
+            end
+        end)
+    end
+
+    inputController:BindHint(v488.PromptCircle, Enum.KeyCode.ButtonX, v488.PromptKey)
+
+    local autoHatch = v488.AutoHatch
+
+    buttonEffects:Bind(autoHatch.Button, true)
+    inputController:BindHint(autoHatch.Frame, Enum.KeyCode.ButtonL1, autoHatch.KeyLabel)
+    autoHatch.Button.Activated:Connect(function()
+        local u757: boolean = u93 ~= nil
+
+        startAutoHatch(p55.Name)
+
+        local u758: boolean = u93 ~= nil
+
+        if u758 ~= u757 then
+            soundController:PlayCue(if u758 then "AutoOn" else "AutoOff")
+        end
+    end)
+
+    for key, value in t4 do
+        local v510 = v488.HatchButtons[key]
+        local v511 = ("Missing egg button: %*"):format(key)
+        local v512 = assert(v510, v511)
+
+        buttonEffects:Bind(v512.Button, true)
+
+        for key2, value2 in t6 do
+            if value == value2.Count then
+                inputController:BindHint(v512.Frame, value2.Key, v512.KeyLabel)
+            end
+        end
+
+        v512.Button.Activated:Connect(function()
+            soundController:PlayCue("EggHatchPress", t5[key])
+            requestHatch(p55.Name, value, v488:IsGodlyMode())
+        end)
+    end
+
+    v488:FitGlyphs()
+    eggCostSigns.SetUIOpen(p55, true)
+    updateButtonStates()
+    updateBoostFrames()
+    inputController:PushLayer("EggBillboard", billboard, dismissBillboard, v488.PromptButton, nil, false)
+    contextActionService:BindActionAtPriority("TS2_EggSingleKeyboard", function(_, p59)
+        if not inputController:IsWorldInputBlocked() and not userInputService:GetFocusedTextBox() then
+            if p59 == Enum.UserInputState.Begin and u67 == v488 then
+                if v488:IsRingOpen() then
+                    requestHatch(p55.Name, 1, v488:IsGodlyMode())
+                else
+                    soundController:PlayCue("EggRingOpen")
+                    u68 = p55.Name
+                    v488:SetRingOpen(true)
+                end
+            end
+
+            return Enum.ContextActionResult.Sink
+        end
+
+        return Enum.ContextActionResult.Pass
+    end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.E)
+
+    for key3, value3 in t7 do
+        contextActionService:BindActionAtPriority(value3.Name, function(_, p61)
+            if not inputController:IsWorldInputBlocked() and not userInputService:GetFocusedTextBox() then
+                if p61 == Enum.UserInputState.Begin then
+                    requestHatch(p55.Name, value3.Count, v488:IsGodlyMode())
+                end
+
+                return Enum.ContextActionResult.Sink
+            end
+
+            return Enum.ContextActionResult.Pass
+        end, false, Enum.ContextActionPriority.High.Value, value3.Key)
+    end
+
+    contextActionService:BindActionAtPriority("TS2_EggGodly", function(_, p63)
+        if not inputController:IsWorldInputBlocked() and not userInputService:GetFocusedTextBox() then
+            if inputController:IsNavigatingUi() then
+                return Enum.ContextActionResult.Pass
+            end
+
+            if not v488:IsGodlyMode() then
+                local v765 = dataController:GetReplica().Data.Items.Owned[godlyHatchConfig.ItemName]
+
+                if (if type(v765) == "number" then v765 else 0) <= 0 then
+                    return Enum.ContextActionResult.Pass
+                end
+            end
+
+            if p63 == Enum.UserInputState.Begin then
+                v484()
+            end
+
+            return Enum.ContextActionResult.Sink
+        end
+
+        return Enum.ContextActionResult.Pass
+    end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.G, Enum.KeyCode.DPadUp)
+    contextActionService:BindActionAtPriority("TS2_EggAutoKeyboard", function(_, p65)
+        if not inputController:IsWorldInputBlocked() and not userInputService:GetFocusedTextBox() then
+            if p65 == Enum.UserInputState.Begin then
+                startAutoHatch(p55.Name)
+            end
+
+            return Enum.ContextActionResult.Sink
+        end
+
+        return Enum.ContextActionResult.Pass
+    end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.F, Enum.KeyCode.ButtonL1)
+
+    for key4, value4 in t6 do
+        contextActionService:BindActionAtPriority(value4.Name, function(_, p67)
+            if not inputController:IsWorldInputBlocked() and not userInputService:GetFocusedTextBox() then
+                if p67 == Enum.UserInputState.Begin then
+                    if value4.Count ~= 1 then
+                        requestHatch(p55.Name, value4.Count, v488:IsGodlyMode())
+                    elseif u67 == v488 then
+                        if v488:IsRingOpen() then
+                            requestHatch(p55.Name, 1, v488:IsGodlyMode())
+                        else
+                            soundController:PlayCue("EggRingOpen")
+                            u68 = p55.Name
+                            v488:SetRingOpen(true)
+                        end
+                    end
+                end
+
+                return Enum.ContextActionResult.Sink
+            end
+
+            return Enum.ContextActionResult.Pass
+        end, false, Enum.ContextActionPriority.High.Value, value4.Key)
+    end
+
+    eggMenuPad.Attach(v488, p55.Name, {
+        CanFocus = function()
+            return u67 == v488 and not secretHatchRenderer:IsAwaitingHold()
+        end
+    })
+end
+
+local u167 = nil
+
+local function afterSequence(p68)
+    if #t1 > 0 then
+        u167()
+
+        return
+    end
+
+    if u79 then
+        return
+    end
+
+    if u93 ~= nil and (p68 == nil or p68 == u93) then
+        task.delay(0.1, u141)
+    end
+
+    if u93 == nil and p68 ~= nil then
+        v59.StopOfflineHatch:Fire()
+    end
+end
+
+local t13: {[any]: any} = {}
+
+local function holdReceipt(p69)
+    if p69 ~= nil then
+        t13[p69] = (t13[p69] or 0) + 1
+    end
+end
+local function releaseReceipt(p70)
+    if p70 == nil then
+        return
+    end
+
+    local n1 = (t13[p70] or 1) - 1
+
+    if n1 > 0 then
+        t13[p70] = n1
+
+        return
+    end
+
+    t13[p70] = nil
+    petReceiptEffects:Finish(p70)
+end
+local function revealSecret(p71, p72)
+    local pet = p71.Pet
+
+    local function revealed()
+        if type(pet.Id) == "string" then
+            v59.SecretAnimationCompleted:Fire({ PetId = pet.Id })
+            v59.SecretRevealSeen:Fire({ PetId = pet.Id })
+        end
+
+        protect(releaseReceipt, p71.Receipt)
+
+        if p71.Egg ~= nil then
+            protect(hatchesPanel.Record, {
+                Egg = p71.Egg,
+                Pets = { pet }
+            })
+        end
+
+        if p71.OnDone ~= nil then
+            protect(p71.OnDone)
+        end
+
+        p72()
+    end
+
+    if not p71.Cutscene then
+        secretHatchRenderer:Play(pet, revealed, p71.Receipt)
+
+        return
+    end
+
+    secretHatchRenderer:Play(pet, function()
+        local v770, v771 = secretHatchCutscenes:Play(pet, function(p73)
+            if p73 == "Failed" then
+                secretHatchRenderer:PlayReveal(pet, revealed, p71.Receipt)
+
+                return
+            end
+
+            revealed()
+        end)
+
+        if not v770 then
+            local petName = pet.Name
+            local text: string = tostring(v771)
+            local v774 = ("[TS2 EggController] %* cutscene did not start (%*); using the secret reveal."):format(petName, text)
+
+            warn(v774)
+            secretHatchRenderer:PlayReveal(pet, revealed, p71.Receipt)
+        end
+    end, p71.Receipt, { HandOff = true })
+end
+local function runSecretQueue()
+    if not u110 and #t10 ~= 0 then
+        u110 = true
+        task.spawn(function()
+            while #t10 > 0 do
+                while true do
+                    if not secretHatchRenderer:IsPlaying() and not secretHatchCutscenes:IsPlaying() then
+                        break
+                    end
+
+                    task.wait(0.1)
+                end
+
+                local v775 = table.remove(t10, 1)
+                local u776: boolean = false
+
+                if not protect(revealSecret, v775, function()
+                    u776 = true
+                end) then
+                    u776 = true
+                end
+
+                local v777 = nil
+
+                while not u776 do
+                    task.wait(0.1)
+
+                    if secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying() then
+                        v777 = nil
+                    elseif v777 == nil then
+                        v777 = os.clock()
+                    elseif os.clock() - v777 > 5 then
+                        local v778 = ("[TS2 EggController] %*'s secret reveal ended without reporting done; going on"):format(v775.Pet.Name)
+
+                        warn(v778)
+
+                        break
+                    end
+                end
+
+                task.wait()
+            end
+
+            u110 = false
+            u167()
+
+            if not u77 and #t1 == 0 and not u79 and u93 ~= nil then
+                task.delay(0.1, u141)
+            end
+        end)
+
+        return
+    end
+end
+local function queueSecret(p74, p75, p76, p77)
+    if type(p74.Id) == "string" then
+        if t11[p74.Id] then
+            return
+        end
+
+        t11[p74.Id] = true
+    end
+
+    if p75 ~= nil then
+        t13[p75] = (t13[p75] or 0) + 1
+    end
+
+    if p76 then
+        secretHatchCutscenes:Prefetch(p74.Name)
+    end
+
+    table.insert(t10, { Pet = p74, Receipt = p75, Cutscene = p76, Egg = p77 })
+end
+local function playSuccessfulHatch(p78, p79)
+    local v533 = if type(p78.Egg) == "string" then hatchEggShell.Resolve(u63, p78.Egg) else nil
+
+    if v533 == nil then
+        local v534 = ("[TS2 EggController] Skipped the reveal of a %* hatch: the egg isn't loaded"):format((tostring(p78.Egg)))
+
+        warn(v534)
+
+        if type(p78.Pets) == "table" then
+            for iterFirst, iterSecond in p78.Pets, nil, nil do
+                if type(iterSecond) == "table" and type(iterSecond.Id) == "string" and type(iterSecond.Rarity) == "string" and string.match(iterSecond.Rarity, "^Secret") ~= nil then
+                    v59.SecretAnimationCompleted:Fire({ PetId = iterSecond.Id })
+                end
+            end
+        end
+
+        u72 = u79
+
+        if p79 ~= nil then
+            p79()
+        end
+
+        return
+    end
+
+    local v537 = if v533.Parent == u63 then v533 else nil
+    local v538 = if p78.Forced == true then nil else p78.Egg
+    local t25 = {}
+
+    for iterFirst2, iterSecond2 in p78.Pets, nil, nil do
+        local u542: boolean = false
+
+        if type(iterSecond2) == "table" then
+            u542 = false
+
+            if type(iterSecond2.Rarity) == "string" then
+                u542 = string.match(iterSecond2.Rarity, "^Secret") ~= nil
+            end
+        end
+
+        if u542 then
+            table.insert(t25, iterSecond2)
+        end
+    end
+
+    if #t25 > 0 then
+        local v543 = petReceiptEffects:Begin(p78.Pets)
+
+        if v543 ~= nil then
+            t13[v543] = (t13[v543] or 0) + 1
+        end
+
+        for key, value in t25 do
+            local u546 = false
+
+            if value.AutoDeleted ~= true then
+                u546 = secretHatchCutscenes:Has(value.Name)
+            end
+
+            queueSecret(value, v543, u546, v538)
+        end
+
+        if not u110 and #t10 ~= 0 then
+            u110 = true
+            task.spawn(function()
+                while #t10 > 0 do
+                    while true do
+                        if not secretHatchRenderer:IsPlaying() and not secretHatchCutscenes:IsPlaying() then
+                            break
+                        end
+
+                        task.wait(0.1)
+                    end
+
+                    local v779 = table.remove(t10, 1)
+                    local u780: boolean = false
+
+                    if not protect(revealSecret, v779, function()
+                        u780 = true
+                    end) then
+                        u780 = true
+                    end
+
+                    local v781 = nil
+
+                    while not u780 do
+                        task.wait(0.1)
+
+                        if secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying() then
+                            v781 = nil
+                        elseif v781 == nil then
+                            v781 = os.clock()
+                        elseif os.clock() - v781 > 5 then
+                            local v782 = ("[TS2 EggController] %*'s secret reveal ended without reporting done; going on"):format(v779.Pet.Name)
+
+                            warn(v782)
+
+                            break
+                        end
+                    end
+
+                    task.wait()
+                end
+
+                u110 = false
+                u167()
+
+                if not u77 and #t1 == 0 and not u79 and u93 ~= nil then
+                    task.delay(0.1, u141)
+                end
+            end)
+        end
+
+        if v543 ~= nil then
+            local n1 = (t13[v543] or 1) - 1
+
+            if n1 > 0 then
+                t13[v543] = n1
+            else
+                t13[v543] = nil
+                petReceiptEffects:Finish(v543)
+            end
+        end
+
+        u72 = u79
+
+        if p79 ~= nil then
+            p79()
+        end
+
+        return
+    end
+
+    u72 = true
+    u77 = true
+    n2 += 1
+    t25 = n2
+    u95 = v538
+    refreshAutoHatchHud()
+
+    if v537 ~= nil then
+        u65 = v537
+    end
+
+    clearBillboard()
+    v538 = petReceiptEffects:Begin(p78.Pets)
+
+    if v538 ~= nil then
+        t13[v538] = (t13[v538] or 0) + 1
+    end
+
+    local u548: boolean = false
+
+    hatchRenderer:Play(v533, p78, function()
+        if u548 then
+            return
+        end
+
+        u548 = true
+        u77 = false
+        u72 = u79
+        u95 = nil
+
+        if v537 ~= nil and u65 == v537 then
+            u65 = nil
+        end
+
+        protect(releaseReceipt, v538)
+        protect(refreshAutoHatchHud)
+
+        if p79 ~= nil then
+            p79()
+        end
+    end, v538)
+
+    if p78.Forced ~= true then
+        task.spawn(function()
+            while n2 == t25 and u77 do
+                local v783 = hatchRenderer:GetEndsAt()
+
+                if v783 ~= nil then
+                    local v784 = os.clock()
+                    local n1 = 0.25
+
+                    if #t2 > 0 then
+                        n1 = 0
+
+                        for key, value in t2 do
+                            n1 = math.max(n1, value)
+                        end
+                    end
+
+                    local v788 = math.min(n1 + 0.1, 1)
+
+                    if v784 >= v783 - v788 then
+                        local v789 = u93
+
+                        if v789 == nil or v789 ~= u95 or not not u79 or #t1 > 0 then
+                            return
+                        end
+
+                        if u73 then
+                            return
+                        end
+
+                        local v790 = pickAutoHatchCount(v789)
+
+                        if v790 == nil then
+                            return
+                        end
+
+                        sendHatchRequest(v789, v790)
+
+                        return
+                    end
+                end
+
+                runService.Heartbeat:Wait()
+            end
+        end)
+    end
+end
+
+local t14: {[any]: any} = {
+    StorageFull = "Your pet storage filled up!",
+    NotEnoughCoins = "You ran out of coins for the egg.",
+    HatchLimit = "That's the 10,000 egg offline limit."
+}
+
+local function notifyOfflineHatches(p80)
+    local numberValue = tonumber(p80.Hatched) or 0
+    local numberValue2: number? = tonumber(p80.Kept)
+    local numberValue3 = tonumber(p80.Deleted) or 0
+    local numberValue4 = tonumber(p80.Earned) or 0
+    local s1
+
+    if numberValue > 0 then
+        local v555 = formatNumber:Commas(numberValue)
+        local offlineHatchConfigSpeedLabel = offlineHatchConfig.SpeedLabel
+        local v557 = formatNumber:Commas(numberValue2 or 0)
+        local v558 = ("Hatched %* eggs while away (%*): %* kept"):format(v555, offlineHatchConfigSpeedLabel, v557)
+        local v559
+
+        if numberValue3 > 0 then
+            v559 = (", %* auto-deleted"):format((formatNumber:Commas(numberValue3)))
+        else
+            v559 = ""
+        end
+
+        s1 = v558 .. v559
+    else
+        s1 = "No eggs hatched while you were away"
+    end
+
+    if numberValue4 > 0 then
+        local v560 = (" • +%* Clicks"):format((formatNumber:Abbreviate(numberValue4, true)))
+
+        s1 ..= v560
+    end
+
+    local v561 = t14[p80.Reason]
+    local v562 = if v561 == nil then s1 else ("%*. %*"):format(s1, v561)
+    local v563 = if v561 == nil then Color3.fromRGB(61, 255, 140) else Color3.fromRGB(255, 200, 80)
+
+    notificationController:Notify(v562, v563, nil, 7)
+end
+local function handleHatchResult(p81)
+    if p81.Forced == true then
+        playSuccessfulHatch(p81, function()
+            if #t1 > 0 then
+                u167()
+
+                return
+            end
+
+            if u79 then
+                return
+            end
+
+            if u93 ~= nil then
+                task.delay(0.1, u141)
+            end
+        end)
+
+        return
+    end
+
+    if p81.Success == true then
+        if p81.Godly == true then
+            local v565 = if type(p81.GodlyLeft) == "number" then p81.GodlyLeft else 0
+
+            if v565 <= 0 then
+                u69 = nil
+            end
+
+            local v566 = ("Godly Hatch! x%* Luck  ·  %* left"):format(godlyHatchConfig.Luck, v565)
+
+            notificationController:Notify(v566, color3)
+        end
+
+        playSuccessfulHatch(p81, function()
+            local hatchesPanelRecord = hatchesPanel.Record
+            local v792 = withoutSecrets(p81)
+
+            hatchesPanelRecord(v792)
+            afterSequence(p81.Egg)
+        end)
+
+        return
+    end
+
+    u72 = u79
+
+    if p81.Error == "StorageFull" then
+        local v567 = dataController:GetReplica().Data
+        local n1: number = 0
+
+        for iterValue in v567.Pets.Owned, nil, nil do
+            n1 += 1
+        end
+
+        local v570 = if type(p81.Needed) == "number" then p81.Needed else 1
+
+        soundController:Play("Broke")
+
+        local v571 = ("Storage full (%*/%*). This hatch needs %* free slot%* — delete or craft pets to keep hatching."):format(n1, v567.Pets.StorageLimit, v570, if v570 == 1 then "" else "s")
+        local color32 = Color3.fromRGB(255, 64, 64)
+
+        notificationController:Notify(v571, color32, nil, 6)
+        stopAutoHatch()
+
+        return
+    end
+
+    if p81.Error ~= "NotEnoughCoins" then
+        if p81.Error == "NotEnoughGodlyHatches" then
+            soundController:Play("Broke")
+            notificationController:Notify("Not enough Godly Hatches! Get more in the Shop.", Color3.fromRGB(255, 64, 64))
+        elseif p81.Error ~= "RateLimited" then
+            if p81.Error ~= "Cancelled" then
+                if (p81.Error == "ServerError" or p81.Error == "Inactive") and u93 == p81.Egg and t12.Failures < t12.Max then
+                    local v573: {[any]: any} = t12
+
+                    v573.Failures = v573.Failures + 1
+                    task.delay(1, u141)
+
+                    return
+                end
+
+                if p81.Error == "TooFar" then
+                    stopAutoHatch("Auto-hatch stopped: you left the egg")
+
+                    return
+                end
+
+                if p81.Error == "IslandLocked" then
+                    local v574 = launchEggConfig[p81.Egg]
+
+                    soundController:Play("Broke")
+
+                    local v575 = ("Unlock %* to hatch this egg!"):format(if v574 == nil or v574.Island == nil then "this island" else v574.Island)
+
+                    notificationController:Notify(v575, Color3.fromRGB(255, 64, 64))
+                    stopAutoHatch()
+
+                    return
+                end
+
+                soundController:Play("Broke")
+
+                local v576 = ("Auto-hatch stopped: that hatch failed (%*). Turn it back on to keep hatching."):format((tostring(p81.Error or "Refused")))
+
+                stopAutoHatch(v576)
+            elseif u93 ~= nil then
+                task.delay(0.1, u141)
+
+                return
+            end
+        elseif u93 == p81.Egg then
+            task.delay(0.4, u141)
+
+            return
+        end
+
+        return
+    end
+
+    if u93 == nil or u93 ~= p81.Egg or pickAutoHatchCount(p81.Egg) == nil and not waitForCoins() then
+        soundController:Play("Broke")
+        stopAutoHatch("Auto-hatch stopped: not enough coins", Color3.fromRGB(255, 64, 64))
+
+        return
+    end
+
+    task.defer(u141)
+end
+local function presentationBusy()
+    local v577 = u77 or u73 or hatchRenderer:IsPlaying()
+
+    if not v577 then
+        v577 = u110 or secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying()
+
+        if v577 then
+            v577 = not secretHatchRenderer:IsAwaitingHold()
+        end
+    end
+
+    return v577
+end
+local function settlesInBackground(p82)
+    local u579 = not u77 and not u73
+
+    if u579 then
+        u579 = u110 or secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying()
+
+        if u579 then
+            u579 = not secretHatchRenderer:IsAwaitingHold()
+        end
+
+        if u579 then
+            u579 = false
+
+            if p82.Forced ~= true then
+                u579 = p82.Godly ~= true
+            end
+        end
+    end
+
+    return u579
+end
+local function settleInBackground(p83)
+    if p83.Success == true and type(p83.Pets) == "table" then
+        for iterFirst, iterSecond in p83.Pets, nil, nil do
+            local u583: boolean = false
+
+            if type(iterSecond) == "table" then
+                u583 = false
+
+                if type(iterSecond.Rarity) == "string" then
+                    u583 = string.match(iterSecond.Rarity, "^Secret") ~= nil
+                end
+            end
+
+            if u583 then
+                local u584 = false
+
+                if iterSecond.AutoDeleted ~= true then
+                    u584 = secretHatchCutscenes:Has(iterSecond.Name)
+                end
+
+                queueSecret(iterSecond, nil, u584, p83.Egg)
+            end
+        end
+
+        if not u110 and #t10 ~= 0 then
+            u110 = true
+            task.spawn(function()
+                while #t10 > 0 do
+                    while true do
+                        if not secretHatchRenderer:IsPlaying() and not secretHatchCutscenes:IsPlaying() then
+                            break
+                        end
+
+                        task.wait(0.1)
+                    end
+
+                    local v793 = table.remove(t10, 1)
+                    local u794: boolean = false
+
+                    if not protect(revealSecret, v793, function()
+                        u794 = true
+                    end) then
+                        u794 = true
+                    end
+
+                    local v795 = nil
+
+                    while not u794 do
+                        task.wait(0.1)
+
+                        if secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying() then
+                            v795 = nil
+                        elseif v795 == nil then
+                            v795 = os.clock()
+                        elseif os.clock() - v795 > 5 then
+                            local v796 = ("[TS2 EggController] %*'s secret reveal ended without reporting done; going on"):format(v793.Pet.Name)
+
+                            warn(v796)
+
+                            break
+                        end
+                    end
+
+                    task.wait()
+                end
+
+                u110 = false
+                u167()
+
+                if not u77 and #t1 == 0 and not u79 and u93 ~= nil then
+                    task.delay(0.1, u141)
+                end
+            end)
+        end
+
+        local hatchesPanelRecord = hatchesPanel.Record
+        local v586 = withoutSecrets(p83)
+
+        hatchesPanelRecord(v586)
+
+        return
+    end
+
+    handleHatchResult(p83)
+end
+
+u167 = function()
+    local v587 = nil
+
+    local function take(p84, p85)
+        if protect(p84, p85) then
+            return
+        end
+
+        if u77 and not hatchRenderer:IsPlaying() then
+            u77 = false
+            u95 = nil
+        end
+
+        if u77 then
+            return
+        end
+
+        u72 = u79
+
+        if u93 ~= nil and not u79 then
+            task.delay(0.5, u141)
+        end
+    end
+
+    while #t1 > 0 do
+        local v589 = t1[1]
+        local u590 = not u77 and not u73
+
+        if u590 then
+            u590 = u110
+
+            if not u590 then
+                u590 = secretHatchRenderer:IsPlaying()
+
+                if not u590 then
+                    u590 = secretHatchCutscenes:IsPlaying()
+                end
+            end
+
+            if u590 then
+                u590 = not secretHatchRenderer:IsAwaitingHold()
+            end
+
+            if u590 then
+                u590 = false
+
+                if v589.Forced ~= true then
+                    u590 = v589.Godly ~= true
+                end
+            end
+        end
+
+        if u590 then
+            local v591 = table.remove(t1, 1)
+
+            take(settleInBackground, v591)
+
+            if v591.Success == true then
+                v587 = v591.Egg
+            end
+        else
+            local v592 = u77 or u73 or hatchRenderer:IsPlaying()
+
+            if not v592 then
+                v592 = u110 or secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying()
+
+                if v592 then
+                    v592 = not secretHatchRenderer:IsAwaitingHold()
+                end
+            end
+
+            if v592 then
+                break
+            end
+
+            take(handleHatchResult, table.remove(t1, 1))
+        end
+    end
+
+    if u77 then
+        return
+    end
+
+    u72 = u79
+
+    if v587 ~= nil and #t1 == 0 and not u79 then
+        if v587 == u93 then
+            task.defer(u141)
+        elseif u93 == nil then
+            v59.StopOfflineHatch:Fire()
+        end
+    end
+
+    if #t1 == 0 or u76 then
+        return
+    end
+
+    u76 = true
+    task.spawn(function()
+        while true do
+            local v799 = u77 or u73 or hatchRenderer:IsPlaying()
+
+            if not v799 then
+                v799 = u110 or secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying()
+
+                if v799 then
+                    v799 = not secretHatchRenderer:IsAwaitingHold()
+                end
+            end
+
+            if not v799 or not not u77 then
+                break
+            end
+
+            task.wait(0.05)
+        end
+
+        u76 = false
+        u167()
+    end)
+end
+
+local function queueHatchResult(p86)
+    table.insert(t1, p86)
+    u167()
+end
+
+v54 = {
+    Init = function(_)
+        u62 = LocalPlayer:WaitForChild("PlayerGui")
+        initAutoHatchHud()
+        u63 = workspace:WaitForChild("Eggs")
+        hatchRenderer:Init()
+        hatchRenderer:SetHudHold(function()
+            return u93 ~= nil and (t8.Since == nil or not (os.clock() - t8.Since >= v105.Hud))
+        end)
+        secretHatchRenderer:Init()
+        userInputService.InputBegan:Connect(function()
+            t8.LastInput = os.clock()
+        end)
+        v59.EggHatchResult:Connect(function(p88)
+            if type(p88) == "table" then
+                noteAnswer(p88)
+
+                if p88.Error ~= "ServerError" and p88.Error ~= "Inactive" then
+                    t12.Failures = 0
+                end
+
+                if p88.Success == true and p88.Egg == u93 then
+                    t8.Owed = false
+                end
+
+                table.insert(t1, p88)
+                u167()
+
+                return
+            end
+        end)
+        v59.ForcedHatchResult:Connect(function(p89)
+            if type(p89) == "table" and p89.Success == true and p89.Forced == true and type(p89.Pets) == "table" then
+                table.insert(t1, p89)
+                u167()
+
+                return
+            end
+        end)
+    end
+}
+
+local function toBox(p90)
+    return { L = p90.Min.X, T = p90.Min.Y, R = p90.Max.X, B = p90.Max.Y }
+end
+local function fitInput(p91, p92, p93, p94, p95, p96, p97)
+    local v603 = touchLayout.TopInset()
+    local viewportSize = p92.ViewportSize
+    local t26: {[any]: any} = { L = 0, T = -v603, R = viewportSize.X, B = viewportSize.Y - v603 }
+    local v606 = p91:Geometry()
+    local v607 = hudObstacles.Get()
+
+    return {
+        Screen = t26,
+        Geometry = v606,
+        Anchor = p93,
+        Centre = p94,
+        Ring = p95,
+        RingSpan = p96,
+        Obstacles = v607,
+        Card = if p97 == nil then nil else { L = p97.Min.X, T = p97.Min.Y, R = p97.Max.X, B = p97.Max.Y },
+        Avoid = if eggMenuView.Stacked then "Right" else nil,
+        ClearRing = eggMenuView.Stacked
+    }
+end
+local function menuCostFrom(p98)
+    local v609 = u67
+    local CurrentCamera: Camera = workspace.CurrentCamera
+
+    if v609 == nil or CurrentCamera == nil then
+        return math.huge
+    end
+
+    local v611, v612, v613, v614 = v609:FitInput(CurrentCamera, p98, true)
+
+    if v611 == nil or v612 == nil or v613 == nil or v614 == nil then
+        return math.huge
+    end
+
+    local v615, v616 = topHudLayout.GetMovable()
+    local eggMenuFitSolve = eggMenuFit.Solve
+    local v618 = fitInput(v609, CurrentCamera, v611, v612, v613, v614, v616)
+
+    return eggMenuFitSolve(v618).Cost
+end
+local function assistCamera(p99)
+    if touchLayout.Touch and p99 ~= u70 and p99 == u64 and u67 ~= nil then
+        u70 = p99
+
+        local v620 = eggPart(p99)
+
+        if v620 == nil then
+            return
+        end
+
+        eggCameraAssist.Start({
+            Score = menuCostFrom,
+            Target = v620.Position,
+            Alive = function()
+                return u64 == p99 and u67 ~= nil and not u72
+            end
+        })
+
+        return
+    end
+end
+local function fitMenu(p100)
+    local v622 = u67
+    local CurrentCamera: Camera = workspace.CurrentCamera
+    local v624 = nil
+    local v625 = nil
+    local v626 = nil
+    local v627 = nil
+
+    if v622 ~= nil and CurrentCamera ~= nil then
+        local v628, v629, v630, v631 = v622:FitInput(CurrentCamera, nil, if eggMenuView.Stacked then true else nil)
+
+        v624 = v628
+        v625 = v629
+        v626 = v630
+        v627 = v631
+    end
+
+    local v632 = nil
+    local v633 = nil
+
+    if v624 ~= nil then
+        local v634, v635 = topHudLayout.GetMovable()
+
+        v632 = v634
+        v633 = v635
+    end
+
+    if u86 ~= nil and v632 ~= u86 then
+        topHudLayout.SetSidestep(u86, nil)
+    end
+
+    u86 = v632
+
+    if v622 == nil or CurrentCamera == nil or v624 == nil or v625 == nil or v626 == nil or v627 == nil then
+        u83 = nil
+
+        return
+    end
+
+    local u636 = v622 ~= u84
+
+    u84 = v622
+
+    local v637 = fitInput(v622, CurrentCamera, v624, v625, v626, v627, v633)
+
+    v637.Previous = if u636 then nil else u83
+    v633 = eggMenuFit.Solve(v637)
+    v627 = false
+
+    if u636 then
+        s1 = v633.Side
+        u88 = nil
+    elseif v633.Side ~= s1 then
+        local v638 = os.clock()
+
+        u88 = u88 or v638
+
+        if v638 - u88 < 0.3 then
+            v637.Side = s1
+            v633 = eggMenuFit.Solve(v637)
+        else
+            v627 = true
+            s1 = v633.Side
+            u88 = nil
+        end
+    else
+        u88 = nil
+    end
+
+    u83 = v633
+
+    if not u636 and not v627 then
+        local n1 = 1 - math.exp(p100 * -14)
+        local v640: {[any]: any} = t3
+
+        v640.X = v640.X + (v633.OffsetX - t3.X) * n1
+        v640 = t3
+        v640.Y = v640.Y + (v633.OffsetY - t3.Y) * n1
+        v640 = t3
+        v640.Along = v640.Along + (v633.Along - t3.Along) * n1
+        v640 = t3
+        v640.Fit = v640.Fit + (v633.Fit - t3.Fit) * n1
+    else
+        local offsetY = v633.OffsetY
+        local along = v633.Along
+
+        t3.X = v633.OffsetX
+        t3.Y = offsetY
+        t3.Along = along
+        t3.Fit = if v627 then v633.Fit * 0.8 else v633.Fit
+    end
+
+    u636 = function(p101)
+        return math.round(p101 * 2) / 2
+    end
+
+    local side = v633.Side
+    local rounded = math.round(t3.X * 2)
+    local rounded2 = math.round(t3.Y * 2)
+    local rounded3 = math.round(t3.Along * 2)
+    local rounded4 = math.round(t3.Fit * 1000)
+
+    v622:ApplyPlacement(side, rounded / 2, rounded2 / 2, rounded3 / 2, rounded4 / 1000)
+
+    if v632 ~= nil then
+        local cardRect = v633.CardRect
+        local t27
+
+        if cardRect == nil then
+            t27 = nil
+        else
+            t27 = {
+                Rect = Rect.new(cardRect.L, cardRect.T, cardRect.R, cardRect.B),
+                Scale = v633.CardScale
+            }
+        end
+
+        topHudLayout.SetSidestep(v632, t27)
+    end
+end
+function v54.Start(_)
+    local v651 = dataController:GetReplica()
+
+    task.spawn(function()
+        while true do
+            if workspace:GetAttribute("IsClientLoaded") == true then
+                break
+            end
+
+            workspace:GetAttributeChangedSignal("IsClientLoaded"):Wait()
+        end
+
+        task.wait()
+        eggCostSigns.Start(u63, v651)
+        eggIdleAnimation.Start(u63)
+        eggLocks.Start(u63, v651)
+        eggUnlockBanner.Start(u63, v651)
+        eggAffordability.Start(u63, v651, 10)
+        u63.DescendantAdded:Connect(function(p103)
+            if p103:IsA("SurfaceGui") or p103:IsA("TextLabel") or p103:IsA("ImageLabel") then
+                task.defer(updateWorldPriceSign, p103)
+            end
+        end)
+
+        for iterFirst, iterSecond in u63:GetDescendants() do
+            if iterSecond:IsA("SurfaceGui") then
+                updateWorldPriceSign(iterSecond)
+            end
+        end
+    end)
+    task.spawn(hatchesPanel.Start, {
+        AutoEgg = function()
+            return u93
+        end,
+        IsBusy = function()
+            local v805 = u72 or u73
+
+            if not v805 then
+                v805 = true
+
+                if not (#t1 > 0) then
+                    v805 = hatchRenderer:IsPlaying() or u110 or secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying()
+                end
+            end
+
+            return v805
+        end
+    })
+
+    local u652: boolean = false
+    local u653 = nil
+    local u654: boolean = false
+    local u655: boolean = false
+
+    local function recapOutstanding()
+        local hatchPending = v651.Data.Offline.HatchPending
+        local v807: boolean = u652
+
+        if not v807 then
+            v807 = false
+
+            if type(hatchPending) == "table" then
+                v807 = hatchPending.Id ~= u653
+            end
+        end
+
+        return v807
+    end
+
+    local u657 = nil
+
+    u657 = function()
+        local attributeValue: any = LocalPlayer:GetAttribute(offlineHatchConfig.ResumeAttribute)
+
+        if not u654 and not u655 and type(attributeValue) == "string" and launchEggConfig[attributeValue] ~= nil then
+            u654 = true
+            task.spawn(function()
+                task.wait(1)
+
+                local u845 = nil
+                local u846: boolean = false
+
+                while not u655 and LocalPlayer:GetAttribute(offlineHatchConfig.ResumeAttribute) == attributeValue do
+                    local u847 = true
+
+                    if workspace:GetAttribute("IsClientLoaded") == true then
+                        local hatchPending = v651.Data.Offline.HatchPending
+
+                        u847 = u652
+
+                        if not u847 then
+                            u847 = false
+
+                            if type(hatchPending) == "table" then
+                                u847 = hatchPending.Id ~= u653
+                            end
+                        end
+
+                        if not u847 then
+                            u847 = u72
+
+                            if not u847 then
+                                u847 = true
+
+                                if not (#t1 > 0) then
+                                    u847 = hatchRenderer:IsPlaying()
+                                end
+                            end
+                        end
+                    end
+
+                    if not u847 and not protect(function()
+                        local v867 = u845
+
+                        if not v867 then
+                            local v868 = os.clock()
+                            local attributeValue2: any = LocalPlayer:GetAttribute(reconnectConfig.PlacedAttribute)
+
+                            v867 = v868 + (if attributeValue2 == true then 20 else 10)
+                        end
+
+                        u845 = v867
+
+                        local Character: Model = LocalPlayer.Character
+                        local v871 = if Character == nil then nil else Character:FindFirstChild("HumanoidRootPart")
+                        local attributeValue3: any = LocalPlayer:GetAttribute(offlineHatchConfig.ResumeSpotAttribute)
+
+                        if v871 ~= nil and v871:IsA("BasePart") and inAutoHatchReach(v871, attributeValue, (nearestEgg(v871))) then
+                            u655 = true
+
+                            if u93 == nil then
+                                local v873 = if LocalPlayer:GetAttribute(offlineHatchConfig.ResumeFixAttribute) == true then ("Auto-hatch is back on! Hatching the %* Egg again."):format(attributeValue) else ("Welcome back! Auto-hatching the %* Egg again."):format(attributeValue)
+
+                                startAutoHatch(attributeValue, v873, true)
+
+                                if u93 == attributeValue then
+                                    soundController:PlayCue("AutoOn")
+
+                                    return
+                                end
+                            elseif u93 == attributeValue then
+                                u141()
+
+                                return
+                            end
+                        else
+                            if not u846 and Character ~= nil and v871 ~= nil and v871:IsA("BasePart") and typeof(attributeValue3) == "CFrame" and (attributeValue3.Position - v871.Position).Magnitude < 40 then
+                                u846 = true
+                                Character:PivotTo(attributeValue3)
+
+                                return
+                            end
+
+                            local v874 = os.clock()
+
+                            if v867 < v874 then
+                                u655 = true
+                            end
+                        end
+                    end) then
+                        u655 = true
+                    end
+
+                    task.wait(0.25)
+                end
+
+                u654 = false
+
+                if LocalPlayer:GetAttribute(offlineHatchConfig.ResumeAttribute) ~= attributeValue then
+                    u657()
+                end
+            end)
+
+            return
+        end
+    end
+
+    local function scheduleRecap()
+        if not u652 and type(v651.Data.Offline.HatchPending) == "table" then
+            u652 = true
+            u73 = true
+
+            local function acknowledge(p104)
+                for i = 1, 3 do
+                    local u851: boolean = false
+                    local u852 = false
+
+                    task.spawn(function()
+                        local ok, result = pcall(function()
+                            return v60:AcknowledgeHatches(p104.Id)
+                        end)
+
+                        u851 = true
+                        u852 = ok and result == true
+                    end)
+
+                    local n1 = os.clock() + 10
+
+                    while not u851 and n1 > os.clock() do
+                        task.wait(0.1)
+                    end
+
+                    local hatchPending = v651.Data.Offline.HatchPending
+
+                    if u852 or type(hatchPending) ~= "table" or hatchPending.Id ~= p104.Id then
+                        return true
+                    end
+
+                    task.wait(i)
+                end
+
+                return false
+            end
+
+            task.spawn(function()
+                local isClientLoaded
+                local v856
+                local v857
+                local v858
+                local v859
+                local typeName
+                local v861
+                local typeName2
+
+                while true do
+                    isClientLoaded = workspace:GetAttribute("IsClientLoaded")
+
+                    if isClientLoaded == true and not u72 and not hatchRenderer:IsPlaying() then
+                        v856 = u110 or secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying()
+
+                        if v856 then
+                            v857 = secretHatchRenderer:IsAwaitingHold()
+                            v856 = not v857
+                        end
+
+                        if v856 then
+                            task.wait(0.1)
+
+                            continue
+                        else
+                            v858 = v651.Data.Offline.HatchPending
+                            v859 = function()
+                                clearBillboard()
+                                stopAutoHatch()
+
+                                if type(v858) == "table" and offlineHatchRenderer:Play(v858) then
+                                    if (tonumber(v858.Hatched) or 0) == 0 then
+                                        notifyOfflineHatches(v858)
+                                    end
+
+                                    if not acknowledge(v858) then
+                                        notificationController:Notify("Your pets are saved. The recap may appear again next visit.", Color3.fromRGB(255, 200, 80))
+                                    end
+                                end
+                            end
+                            protect(v859)
+                            typeName = type(v858)
+
+                            if typeName == "table" then
+                                u653 = v858.Id
+                            end
+
+                            break
+                        end
+                    else
+                        task.wait(0.1)
+
+                        continue
+                    end
+                end
+
+                u73 = false
+                u652 = false
+                u167()
+                v861 = v651.Data.Offline.HatchPending
+                typeName2 = type(v861)
+
+                if typeName2 == "table" and type(v858) == "table" and v861.Id ~= v858.Id then
+                    task.defer(scheduleRecap)
+                end
+
+                u657()
+            end)
+
+            return
+        end
+    end
+
+    v651:ListenToChange({ "Offline", "HatchPending" }, scheduleRecap)
+    v59.SetOfflineHatch:Fire({ Touch = touchLayout.Touch })
+    scheduleRecap()
+    LocalPlayer:GetAttributeChangedSignal(offlineHatchConfig.ResumeAttribute):Connect(function()
+        if LocalPlayer:GetAttribute(offlineHatchConfig.ResumeAttribute) == nil then
+            u655 = false
+        end
+
+        u657()
+    end)
+    u657()
+
+    local t28: {[any]: any} = {}
+
+    for iterFirst, iterSecond in v651.Data.Eggs.UnseenSecrets, nil, nil do
+        if type(iterSecond) == "table" and type(iterSecond.Id) == "string" and type(iterSecond.Name) == "string" then
+            table.insert(t28, {
+                Id = iterSecond.Id,
+                Name = iterSecond.Name,
+                Tier = iterSecond.Tier,
+                Rarity = iterSecond.Rarity,
+                Power = iterSecond.Power,
+                OneIn = iterSecond.OneIn,
+                Mutation = iterSecond.Mutation
+            })
+        end
+    end
+
+    if #t28 > 0 then
+        task.spawn(function()
+            while true do
+                if workspace:GetAttribute("IsClientLoaded") ~= true then
+                    task.wait(0.25)
+
+                    continue
+                end
+
+                local hatchPending = v651.Data.Offline.HatchPending
+                local v811: boolean = u652
+
+                if not v811 then
+                    v811 = false
+
+                    if type(hatchPending) == "table" then
+                        v811 = hatchPending.Id ~= u653
+                    end
+                end
+
+                if not v811 then
+                    break
+                end
+
+                task.wait(0.25)
+            end
+
+            for key, value in t28 do
+                if v651.Data.Pets.Owned[value.Id] ~= nil then
+                    local v814 = secretHatchCutscenes:Has(value.Name)
+
+                    queueSecret(value, nil, v814, nil)
+                end
+            end
+
+            if u110 then
+                return
+            end
+
+            if #t10 == 0 then
+                return
+            end
+
+            u110 = true
+            task.spawn(function()
+                while #t10 > 0 do
+                    while true do
+                        if not secretHatchRenderer:IsPlaying() and not secretHatchCutscenes:IsPlaying() then
+                            break
+                        end
+
+                        task.wait(0.1)
+                    end
+
+                    local v863 = table.remove(t10, 1)
+                    local u864: boolean = false
+
+                    if not protect(revealSecret, v863, function()
+                        u864 = true
+                    end) then
+                        u864 = true
+                    end
+
+                    local v865 = nil
+
+                    while not u864 do
+                        task.wait(0.1)
+
+                        if secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying() then
+                            v865 = nil
+                        elseif v865 == nil then
+                            v865 = os.clock()
+                        elseif os.clock() - v865 > 5 then
+                            local v866 = ("[TS2 EggController] %*'s secret reveal ended without reporting done; going on"):format(v863.Pet.Name)
+
+                            warn(v866)
+
+                            break
+                        end
+                    end
+
+                    task.wait()
+                end
+
+                u110 = false
+                u167()
+
+                if not u77 and #t1 == 0 and not u79 and u93 ~= nil then
+                    task.delay(0.1, u141)
+                end
+            end)
+        end)
+    end
+
+    dataController:GetReplica():ListenToRawRoots({
+        "Eggs",
+        "Progression",
+        "Currencies",
+        "Monetization",
+        "Items",
+        "Settings"
+    }, function(p105, list, p107)
+        local u818: boolean = false
+
+        if list[1] == "Eggs" then
+            if #list >= 2 then
+                u818 = true
+
+                if list[2] ~= "AutoDelete" then
+                    u818 = list[2] == "AutoDeleteBelow"
+                end
+            else
+                u818 = false
+
+                if p105 == "SetValues" then
+                    u818 = false
+
+                    if type(p107) == "table" then
+                        u818 = true
+
+                        if p107.AutoDelete == nil then
+                            u818 = p107.AutoDeleteBelow ~= nil
+                        end
+                    end
+                end
+            end
+        end
+
+        if u818 and u67 ~= nil and u64 ~= nil then
+            refreshPets(u64.Name)
+        end
+
+        if replicaTouches.Root(p105, list, p107, "Eggs") then
+            local v819 = u67
+            local v820 = u64
+
+            if v819 ~= nil and v820 ~= nil then
+                local v821 = v820.Name
+                local v822 = dataController:GetReplica().Data
+                local v823
+
+                if not secretHatchFormula.SecretsRevealed(v822.Pets.Index, launchEggConfig[v821]) then
+                    v823 = nil
+                else
+                    local v824 = secretHatchFormula.GetDrought(v822.Eggs, v821)
+
+                    v823 = if v824 < n5 then nil else v824
+                end
+
+                if v823 ~= nil ~= v819.ShowPity then
+                    u108(v820)
+                else
+                    v819:SetPity(v823, v820.Name)
+                end
+            end
+        end
+
+        if u67 ~= nil and u64 ~= nil and replicaTouches.Path(p105, list, p107, { "Progression", "UnlockedIslands" }) and v651.Data.Progression.UnlockedIslands["Sky Island"] == true ~= u67.TierShown then
+            u108(u64)
+        end
+
+        if replicaTouches.Root(p105, list, p107, "Currencies") or replicaTouches.Root(p105, list, p107, "Monetization") or replicaTouches.Root(p105, list, p107, "Items") or replicaTouches.Path(p105, list, p107, { "Settings", "GamepassPerks" }) or replicaTouches.Path(p105, list, p107, { "Settings", "DisabledGamepasses" }) then
+            updateButtonStates()
+        end
+    end)
+
+    local bloodMoonEggPets = require(replicatedStorage.Shared.Pets.BloodMoonEggPets)
+
+    workspace:GetAttributeChangedSignal(bloodMoonEggPets.ActiveAttribute):Connect(function()
+        if u67 ~= nil and u64 ~= nil then
+            refreshPets(u64.Name)
+        end
+    end)
+
+    local u663: boolean = false
+    local connection = nil
+
+    local function watchViewport(p108)
+        if connection ~= nil then
+            connection:Disconnect()
+            connection = nil
+        end
+
+        if p108 == nil then
+            return
+        end
+
+        connection = p108:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+            if not u663 and workspace.CurrentCamera == p108 then
+                u663 = true
+                task.delay(0.25, function()
+                    u663 = false
+
+                    if u64 ~= nil then
+                        u108(u64)
+                    end
+                end)
+
+                return
+            end
+        end)
+    end
+
+    watchViewport(workspace.CurrentCamera)
+    workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+        watchViewport(workspace.CurrentCamera)
+    end)
+
+    local u666 = nil
+    local n1 = -math.huge
+    local vectorValue = Vector3.new(0, 0, 0)
+
+    local function throttledNearestEgg(p109)
+        local v827 = os.clock()
+        local v828 = p109.Position
+
+        if v827 - n1 >= 0.1 or (v828 - vectorValue).Magnitude > 3 or u666 ~= nil and u666.Parent ~= u63 then
+            n1 = v827
+            vectorValue = v828
+            u666 = nearestEgg(p109)
+        end
+
+        return u666
+    end
+
+    runService.RenderStepped:Connect(function(deltaTime: number)
+        local CurrentCamera: Camera = workspace.CurrentCamera
+
+        fitMenu(deltaTime)
+
+        local topHudLayoutSetWorldMenuRect = topHudLayout.SetWorldMenuRect
+        local v832 = if u67 == nil or CurrentCamera == nil then nil else u67:ScreenRect(CurrentCamera)
+
+        topHudLayoutSetWorldMenuRect(v832)
+        refreshAutoHatchHud()
+
+        if os.clock() - n4 > 0.5 then
+            n4 = os.clock()
+            updateBoostFrames()
+        end
+
+        if not u73 then
+            local v833 = u110 or secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying()
+
+            if v833 then
+                v833 = not secretHatchRenderer:IsAwaitingHold()
+            end
+
+            if not v833 then
+                local Character: Model = LocalPlayer.Character
+                local v835 = if Character == nil then nil else Character:FindFirstChild("HumanoidRootPart")
+
+                if v835 == nil or not v835:IsA("BasePart") then
+                    clearBillboard()
+                    stopAutoHatch()
+
+                    return
+                end
+
+                local v836 = os.clock()
+                local v837 = v835.Position
+
+                if v836 - n1 >= 0.1 or (v837 - vectorValue).Magnitude > 3 or u666 ~= nil and u666.Parent ~= u63 then
+                    n1 = v836
+                    vectorValue = v837
+                    u666 = nearestEgg(v835)
+                end
+
+                local v838 = u666
+
+                if u93 ~= nil then
+                    if inAutoHatchReach(v835, u93, v838) then
+                        if u64 ~= nil then
+                            clearBillboard()
+                        end
+
+                        return
+                    end
+
+                    stopAutoHatch("Auto-hatch stopped: you left the egg")
+                end
+
+                if v838 == nil then
+                    u68 = nil
+                    u70 = nil
+                    eggMenuPad.Forget()
+                end
+
+                if v838 ~= u65 then
+                    u65 = nil
+                end
+
+                if v838 ~= u65 then
+                    if v838 ~= u64 then
+                        if v838 == nil then
+                            clearBillboard()
+
+                            return
+                        end
+
+                        u108(v838)
+                        assistCamera(v838)
+                    end
+                elseif u64 ~= nil then
+                    clearBillboard()
+
+                    return
+                end
+
+                return
+            end
+        end
+
+        if u64 ~= nil then
+            clearBillboard()
+        end
+    end)
+end
+function v54.GetHatchGuidanceTarget(_, p112)
+    if u64 == nil or p112 ~= u64.Name or u67 == nil or u72 then
+        return nil, false, nil
+    end
+
+    if not u67.Prompt.Enabled then
+        return nil, false, nil
+    end
+
+    if u67:IsRingOpen() then
+        local triple = u67.HatchButtons.Triple
+
+        if triple.Frame:GetAttribute("TS2HatchState") == "Ready" then
+            return triple.Button, true, 3
+        end
+
+        return u67.HatchButtons.Single.Button, true, 1
+    end
+
+    return u67.PromptButton, false, nil
+end
+function v54.GetForcedHatchDebugState(_)
+    return { Queue = #t1, Worker = u77 or u76, Busy = u72 }
+end
+function v54.GetMenuFitDebugState(_)
+    local v675 = u67
+    local CurrentCamera: Camera = workspace.CurrentCamera
+
+    if v675 == nil or CurrentCamera == nil or u83 == nil then
+        return nil
+    end
+
+    local n1 = math.huge
+    local v678, v679, v680, v681 = v675:FitInput(CurrentCamera, nil, true)
+
+    if v678 ~= nil and v679 ~= nil and v680 ~= nil and v681 ~= nil then
+        local v682, v683 = topHudLayout.GetMovable()
+        local eggMenuFitSolve = eggMenuFit.Solve
+        local v685 = fitInput(v675, CurrentCamera, v678, v679, v680, v681, v683)
+
+        n1 = eggMenuFitSolve(v685).Cost
+    end
+
+    return {
+        Egg = if u64 == nil then nil else u64.Name,
+        Side = u83.Side,
+        Fit = u83.Fit,
+        Overlap = u83.Overlap,
+        RingOverlap = u83.RingOverlap,
+        Live = n1,
+        Assist = menuCostFrom(CurrentCamera.CFrame),
+        Assisting = eggCameraAssist.IsActive()
+    }
+end
+function v54.ToggleAutoHatch(_, p116)
+    local u688: boolean = launchEggConfig[p116] ~= nil
+    local v689 = ("Unknown egg: %*"):format(p116)
+
+    assert(u688, v689)
+    startAutoHatch(p116)
+end
+function v54.GetAutoHatchEgg(_)
+    return u93
+end
+function v54.RevealSecret(_, p119, p120)
+    local u694: boolean = false
+
+    if type(p119) == "table" then
+        u694 = false
+
+        if type(p119.Rarity) == "string" then
+            u694 = string.match(p119.Rarity, "^Secret") ~= nil
+        end
+    end
+
+    if u694 and type(p119.Id) == "string" and not t11[p119.Id] then
+        local v695 = secretHatchCutscenes:Has(p119.Name)
+
+        queueSecret(p119, nil, v695, nil)
+        t10[#t10].OnDone = p120
+
+        if u110 then
+            return
+        end
+
+        if #t10 == 0 then
+            return
+        end
+
+        u110 = true
+        task.spawn(function()
+            while #t10 > 0 do
+                while true do
+                    if not secretHatchRenderer:IsPlaying() and not secretHatchCutscenes:IsPlaying() then
+                        break
+                    end
+
+                    task.wait(0.1)
+                end
+
+                local v839 = table.remove(t10, 1)
+                local u840: boolean = false
+
+                if not protect(revealSecret, v839, function()
+                    u840 = true
+                end) then
+                    u840 = true
+                end
+
+                local v841 = nil
+
+                while not u840 do
+                    task.wait(0.1)
+
+                    if secretHatchRenderer:IsPlaying() or secretHatchCutscenes:IsPlaying() then
+                        v841 = nil
+                    elseif v841 == nil then
+                        v841 = os.clock()
+                    elseif os.clock() - v841 > 5 then
+                        local v842 = ("[TS2 EggController] %*'s secret reveal ended without reporting done; going on"):format(v839.Pet.Name)
+
+                        warn(v842)
+
+                        break
+                    end
+                end
+
+                task.wait()
+            end
+
+            u110 = false
+            u167()
+
+            if not u77 and #t1 == 0 and not u79 and u93 ~= nil then
+                task.delay(0.1, u141)
+            end
+        end)
+    elseif p120 ~= nil then
+        task.spawn(p120)
+    end
+end
+function v54.HoldsAutoRebirth(_)
+    local v697 = u93
+
+    if v697 == nil then
+        return false
+    end
+
+    if u79 then
+        return true
+    end
+
+    if not t8.Owed then
+        return false
+    end
+
+    local n1 = os.clock() - t8.OwedAt
+
+    if n1 >= v105.Owed then
+        return false
+    end
+
+    if n1 < 1 then
+        return true
+    end
+
+    local v699 = launchEggConfig[v697]
+
+    if v699 == nil then
+        return false
+    end
+
+    local v700 = dataController:GetReplica().Data
+    local v701 = v700.Currencies.Coins or 0
+    local n2 = v701 + (v701 - t8.OwedCoins) / n1 * (v105.Owed - n1)
+    local v703 = eggPricing.GetUnitPrice(v700, v697, v699.Price)
+
+    return n2 >= v703
+end
+
+return v54
