@@ -1,0 +1,71 @@
+-- Script Path: game:GetService("ReplicatedStorage").Assets.Modules.BoostService
+-- Took 0.95s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local tradingHangout = require(game.ReplicatedStorage.Assets.Modules.TradingHangout)
+local players: Players = game:GetService("Players")
+local services = require(game.ReplicatedStorage.Assets.Modules.Services)
+local boostModule = require(script.Parent.ItemDataService.BoostModule)
+local service = services:GetService("DataService")
+local v6 = services:GetService("Library")("index")
+local u7 = nil
+local v8: boolean = game:GetService("RunService"):IsServer()
+local t1: {[any]: any} = {}
+
+if v8 then
+    players.PlayerRemoving:Connect(function(player: Player)
+        t1[player] = nil
+    end)
+end
+
+return {
+    GetDisplayName = function(_, p2)
+        local v13 = boostModule[p2]
+
+        return v13 and v13.DisplayName or p2:gsub("(%l)(%u)", "%1 %2")
+    end,
+    SetPaused = function(_, p4, p5, p6)
+        assert(v8, "boost pauses are server-owned")
+
+        local t2 = t1[p4] or {}
+
+        t2[p5] = if p6 == true then true else nil
+        t1[p4] = next(t2) and t2 or nil
+        p4:SetAttribute("BoostsPaused", tradingHangout.Enabled or t1[p4] ~= nil)
+    end,
+    IsPaused = function(_, p8)
+        if tradingHangout.Enabled then
+            return true
+        end
+
+        return (p8 or players.LocalPlayer):GetAttribute("BoostsPaused") == true
+    end,
+    InitClient = function(_, p10)
+        u7 = p10
+    end,
+    GetBoosts = function(p11, p12)
+        local t3: {[any]: any} = {}
+
+        if p11:IsPaused(p12) then
+            return t3
+        end
+
+        local v26
+
+        if v8 then
+            v26 = service:GetPlayerData(p12, v6.BOOSTS)
+        else
+            v26 = u7:Call("GetClientData", v6.BOOSTS)
+        end
+
+        for _, v in ipairs(v26 or {}) do
+            if v[2] > 0 then
+                t3[v[1]] = true
+            end
+        end
+
+        return t3
+    end
+}

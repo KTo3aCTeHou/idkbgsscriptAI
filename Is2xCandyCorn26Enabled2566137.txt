@@ -1,0 +1,45 @@
+-- Script Path: game:GetService("ReplicatedStorage").Assets.Modules.Is2xCandycorn26Enabled
+-- Took 0.21s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local halloweenConfig = require(script.Parent.HalloweenConfig)
+
+if halloweenConfig.Enabled then
+    local marketplaceService: MarketplaceService = game:GetService("MarketplaceService")
+    local u3: boolean = false
+
+    local function check()
+        local ok, result = pcall(marketplaceService.GetProductInfo, marketplaceService, 3717493525, Enum.InfoType.Product)
+
+        if ok then
+            u3 = result.Description == "enabled"
+        end
+    end
+
+    task.spawn(function()
+        local v7
+        local v8
+
+        while true do
+            v7, v8 = pcall(marketplaceService.GetProductInfo, marketplaceService, 3717493525, Enum.InfoType.Product)
+
+            if v7 then
+                u3 = v8.Description == "enabled"
+            end
+
+            task.wait(20)
+
+            continue
+        end
+    end)
+
+    return function()
+        return halloweenConfig.Enabled and u3, true
+    end
+end
+
+return function()
+    return false, false
+end

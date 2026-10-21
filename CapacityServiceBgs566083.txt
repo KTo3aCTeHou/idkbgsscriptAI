@@ -1,0 +1,64 @@
+-- Script Path: game:GetService("ReplicatedStorage").Assets.Modules.CapacityService
+-- Took 0.09s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local services = require(game.ReplicatedStorage.Assets.Modules.Services)
+local service = services:GetService("ItemDataService")
+local service2 = services:GetService("DataService")
+local service3 = services:GetService("Network")
+local service4 = services:GetService("Library")
+local v6 = service("GumModule")
+local v7 = service4("index")
+
+local function weld(part0, part1)
+    local manualWeld: ManualWeld = Instance.new("ManualWeld", part0)
+
+    manualWeld.C0 = part0.CFrame:inverse() * part1.CFrame
+    manualWeld.Part0 = part0
+    manualWeld.Part1 = part1
+
+    return manualWeld
+end
+
+return {
+    IsBubbleFull = function(_, p4)
+        local v14
+        local v15
+        local v16
+
+        if service2 then
+            v14 = service2:GetPlayerData(p4, v7.BUBBLE_SIZE)
+            v15 = service2:GetPlayerData(p4, v7.EQUIPPED_ITEMS)[2]
+            v16 = service2:GetPlayerPasses(p4)["Quantum Gum"]
+        else
+            if not service3 then
+                return
+            end
+
+            v14 = service3:Call("GetClientData", v7.BUBBLE_SIZE)
+            v15 = service3:Call("GetClientData", v7.EQUIPPED_ITEMS)[2]
+            v16 = service3:Call("GetOwnedPasses")["Quantum Gum"]
+        end
+
+        return v14 >= (if v16 then math.huge else v6[v15].AirCapacity)
+    end,
+    AddBubble = function(p5, p6, p7)
+        if p5:IsBubbleFull(p6) == false then
+            local v20 = service2:GetPlayerData(p6, 3)
+            local v21 = service2:GetPlayerData(p6, 2)
+
+            v21 = (if service2:GetPlayerPasses(p6)["Quantum Gum"] then math.huge else v6[v21[2]].AirCapacity) - v20
+
+            if p7 > v21 then
+                p7 = v21
+            end
+
+            service2:SetPlayerData(p6, v20 + p7, 3)
+        end
+    end,
+    InitializeClient = function(_, p9)
+        service3 = p9
+    end
+}
