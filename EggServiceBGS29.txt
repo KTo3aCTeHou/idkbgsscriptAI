@@ -1,0 +1,1438 @@
+-- Script Path: game:GetService("ReplicatedStorage").Assets.Modules.EggService
+-- Took 1.13s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local fallMasteryUtil = require(game.ReplicatedStorage.Assets.Modules.FallMasteryUtil)
+local services = require(game.ReplicatedStorage.Assets.Modules.Services)
+local service = services:GetService("Network")
+local service2 = services:GetService("DataService")
+local service3 = services:GetService("ItemDataService")
+local service4 = services:GetService("HotkeyService")
+local service5 = services:GetService("Library")
+local service6 = services:GetService("TweenService")
+local service7 = services:GetService("RunService")
+local service8 = services:GetService("SoundService")
+local service9 = services:GetService("RarityColorService")
+local service10 = services:GetService("ItemCollectionService")
+
+services:GetService("DebugService")
+
+local service11 = services:GetService("MarketplaceService")
+local service12 = services:GetService("AchievementService")
+
+services:GetService("TradingService")
+
+local service13 = services:GetService("BoostService")
+local service17 = nil
+local service14 = services:GetService("BadgeService")
+local service15 = services:GetService("SecretBountyService")
+local v19 = service3("EggModule")
+local v20 = service3("CrateModule")
+local v21 = service3("PetModule")
+local v22 = service3("HatModule")
+local v23 = service3("PrizeModule")
+local v24 = service5("index")
+local v25 = service5("table")
+local v26 = service5("ShinyModifier")
+local service16 = services:GetService("ChallengeService")
+local assets = game.ReplicatedStorage.Assets
+local CurrentCamera: Camera = workspace.CurrentCamera
+local v30 = CFrame.Angles(0, 3.141592653589793, 0)
+local n1 = CFrame.new(0, 0, -3.5) * v30
+
+v30 = function(p1, p2, p3)
+    local v52 = service2:GetPlayerData(p1)
+    local v53 = v52 and v52[v24.POLICY_INFO]
+
+    v52 = true
+
+    if type(v53) == "table" then
+        v52 = true
+
+        if v53.PolicyInfoLoaded == true then
+            v52 = v53.ArePaidRandomItemsRestricted == true
+        end
+    end
+
+    if not v52 then
+        return p2, p3
+    end
+
+    v53 = {}
+
+    for k, v in pairs(p2) do
+        v53[k] = v
+    end
+
+    v53["Lucky Chances"] = nil
+
+    return v53, p3
+end
+
+local t1: {[any]: any} = { v20, v19 }
+
+local function GetNameFromID(p4)
+    local v57 = nil
+
+    for i = 1, #t1 do
+        for k, v in pairs(t1[i].Products) do
+            if k ~= "Rarities" and p4 == v.Product then
+                v57 = k
+
+                break
+            end
+        end
+
+        if v57 then
+            break
+        end
+    end
+
+    if not v57 then
+        v57 = "Egg"
+    end
+
+    return v57
+end
+local function GetModule(p5)
+    if typeof(p5) == "number" then
+        p5 = GetNameFromID(p5)
+    end
+
+    local v62 = p5:find("Egg")
+
+    return v62 and v19 or v20, v62 and v21 or v22
+end
+
+local module: {[any]: any} = {
+    EggExists = function(_, p7)
+        local v65 = p7
+
+        if typeof(v65) == "number" then
+            v65 = GetNameFromID(v65)
+        end
+
+        local v66 = v65:find("Egg")
+
+        return (v66 and v19 or v20)[p7] ~= nil
+    end,
+    GetRandomPetFromEgg = function(_, ...)
+        local t4 = { ... }
+        local v69 = t4[1]
+
+        if typeof(v69) == "number" then
+            v69 = GetNameFromID(v69)
+        end
+
+        t4 = v69:find("Egg")
+
+        return (t4 and v19 or v20)(...)
+    end,
+    GetCost = function(_, p10)
+        return (function()
+            local v217 = p10
+
+            if typeof(v217) == "number" then
+                v217 = GetNameFromID(v217)
+            end
+
+            local v218 = v217:find("Egg")
+            local v219 = v218 and v19 or v20
+
+            if v219[p10] then
+                return v219[p10].Cost
+            end
+
+            if v219.Products[p10] then
+                local product = v219.Products[p10].Product
+
+                return {
+                    "Robux",
+                    service11:GetProductInfo(product, Enum.InfoType.Product).PriceInRobux,
+                    product
+                }
+            end
+        end)()
+    end
+}
+
+local runService: RunService = game:GetService("RunService")
+local rumbleAPI = nil
+
+if runService:IsServer() then
+    rumbleAPI = require(game.ServerScriptService.ServerScript.Modules.RumbleAPI)
+end
+
+function IsEffectsEnabled(player, p12, p13)
+    if typeof(p13) == "string" then
+        p13 = p13:gsub("Mythic ", "")
+    end
+
+    local v75 = typeof(p12) ~= "string" and v19
+
+    if not v75 then
+        v75 = p12:find("Egg") and v19 or v20
+    end
+
+    if not v75[p12] then
+        return true
+    end
+
+    local rarities = v75[p12].Rarities
+
+    v75 = nil
+
+    if not rarities then
+        return true
+    end
+
+    for i = 1, #rarities do
+        if p13 == rarities[i][1] then
+            v75 = rarities[i][2]
+
+            break
+        end
+    end
+
+    if v75 and not (v75 < 0.04) then
+        local v78 = runService:IsServer() and service2:GetPlayerData(player, v24.SETTINGS) or service:Call("GetClientData", v24.SETTINGS)
+        local v79 = v25.find(v78, "Disable Easy Legendary Effects", 1)
+
+        if v79 then
+            return not v78[v79][2], v75
+        end
+
+        return true, v75
+    end
+
+    return true, v75
+end
+function module.InitializeClient(p14, p15)
+    service = p15
+    service17 = services:GetService("GuiService")
+    service:Bind("OpenEgg", function(p16, p17, p18, p19, p20)
+        if typeof(p16) == "number" then
+            local v226 = p16
+
+            if typeof(v226) == "number" then
+                v226 = GetNameFromID(v226)
+            end
+
+            local v227 = v226:find("Egg")
+
+            for k, v in pairs((v227 and v19 or v20).Products) do
+                if k ~= "Rarities" and p16 == v.Product then
+                    p16 = k
+
+                    break
+                end
+            end
+        end
+
+        service17:SetOverlay(false)
+        service17:GetStorage().BuyEggFrame.Visible = false
+        service4:Disable()
+
+        if typeof(p17) == "string" then
+            p14:HatchEgg(p16, p17, p18, nil, nil, p19, p20)
+        else
+            p14:MultiHatchEgg(p16, p17)
+        end
+
+        wait(0.5)
+        service4:Enable()
+    end)
+end
+local function id()
+    return game:GetService("HttpService"):GenerateGUID(false)
+end
+
+local random = Random.new()
+
+game:GetService("HttpService")
+module.DiscordLog = nil
+
+local secretPets: {[any]: any} = {
+    "The Overlord",
+    "Leviathan",
+    "Dogcat",
+    "The OwOlord",
+    "Giant Robot",
+    "Soul Heart",
+    "Sea Star",
+    "Pot O' Gold",
+    "Trophy",
+    "King Penguin",
+    "ObscureEntity",
+    "Easter Basket",
+    "Giant Pearl",
+    "Gryphon",
+    "Lord Shock",
+    "Kraken",
+    "Rainbow Dogcat",
+    "Patriotic Robot",
+    "Rainbow Gryphon",
+    "Rainbow Leviathan",
+    "Fallen Angel",
+    "Sinister Lord",
+    "Radiance",
+    "Ultimate Trophy",
+    "Holy Bell",
+    "Tophat (A)",
+    "Tophat (B)",
+    "Tophat (C)",
+    "Tophat (D)",
+    "Tophat (E)",
+    "Tophat (F)",
+    "Eternal Heart",
+    "Dark Guardian",
+    "Immortal One",
+    "King Doggy",
+    "Ultimate Clover",
+    "Robot 2.0",
+    "Frost Sentinel",
+    "Earth Champion",
+    "Dark Champion",
+    "Sky Champion",
+    "Fire Champion",
+    "King Mush",
+    "Eternal Star",
+    "Giant Choco Chicken",
+    "Wolflord",
+    "Godly Gem",
+    "Dementor",
+    "Dark Lord",
+    "Dark Radiance",
+    "Immortal Trophy",
+    "Phantom",
+    "Sylently's Pet",
+    "Sylently's Hat",
+    "Pyramidium",
+    "Duality",
+    "Shard",
+    "Spring Spirit",
+    "Magic Marshmallow",
+    "Crystal Teddy",
+    "Radiant Challenger",
+    "Dark Dementor",
+    "Radioactive Radiance",
+    "Shadow Challenger",
+    "Radiant Shard",
+    "Plasma Wolflord",
+    "Radiant One",
+    "Elite Challenger",
+    "Galactic Paladin",
+    "Air Basilisk",
+    "Ice Basilisk",
+    "Electric Basilisk",
+    "Fire Basilisk",
+    "Overlord Plushie",
+    "Elite Fallen Angel",
+    "Strawberry Sundae Champion",
+    "Vanilla Sundae Champion",
+    "Mint Sundae Champion",
+    "Chocolate Sundae Champion",
+    "White Hat",
+    "Dragonfruit",
+    "Eternal Cucumber",
+    "Vibe Check",
+    "Lucid Leaf",
+    "Almighty Pumpkin",
+    "Koi",
+    "King Slime",
+    "Candycorn Shard",
+    "Sinister Lord 2.0",
+    "Guardian Skull",
+    "King Skull",
+    "Wolf Skull",
+    "Angelic Skull",
+    "Sinister Skull",
+    "Sinister Shard",
+    "Angelic Spirit",
+    "Luminance",
+    "Elite Wolflord",
+    "BGS Plaque",
+    "Angelic Ghost Spirit",
+    "Demonic Ghost Spirit",
+    "Dice Split",
+    "Elite Lord Shock",
+    "Gingerbread Shard",
+    "Morning Star",
+    "Soulflake",
+    "Archangel",
+    "Sylently Plushie",
+    "sircfenner Plushie",
+    "ObscureEntity Plushie",
+    "Peppermint Leviathan",
+    "Santa Paws",
+    "Christmas Robot",
+    "Christmas Bell",
+    "Demonic Dogcat",
+    "Demonic One",
+    "Firecracker",
+    "New Year Champion",
+    "1B Trophy",
+    "Infinity Gem",
+    "Diamond Ring",
+    "King Kitty",
+    "Harmonic Harp",
+    "Love Thief",
+    "Shattered Soul",
+    "Lovely Rose",
+    "Elite Pot O' Gold",
+    "Prisma Cube",
+    "Pot O' Doggy",
+    "Godly Shamrock",
+    "Money Mouth",
+    "Almighty Hexarium",
+    "Dream Catcher",
+    "Lucky Pyramidium",
+    "Easter Spirit",
+    "Holy Egg",
+    "Cardinal Bunny",
+    "Patronus",
+    "Easter Robot",
+    "Eternal Carrot",
+    "Elite Sentinel",
+    "Corrupt Glitch",
+    "Hellfire",
+    "Elite Sentinel",
+    "ACE",
+    "Demonic Golf Ball",
+    "Angelic Golf Ball",
+    "Hellshard",
+    "All Seeing Eye",
+    "Ghosdeeri",
+    "Wisplord",
+    "Elite Pyramidium",
+    "Frosted Dreamer",
+    "Frosted Duality",
+    "Frost Shard",
+    "Peppermint Heart",
+    "Santa Hat",
+    "Shadow Sundae Champion",
+    "Shadow Wolflord",
+    "Shadow Luminance",
+    "Shadow One",
+    "Pixie Queen",
+    "Wispful Heart",
+    "Fairy Koi",
+    "Dark Basilisk",
+    "Tophat (G)",
+    "Developer Trophy",
+    "Angelic Shard",
+    "King Dogcat",
+    "Dark Lord Shock",
+    "Holy Star",
+    "Nert's Hat",
+    "Demon Reaper",
+    "Curse of Kings",
+    "Inferno Gem",
+    "Space Entity",
+    "Alien Kraken",
+    "UFO",
+    "Galactic Dementor",
+    "Crimson Paladin",
+    "King Seal",
+    "Dark Gryphon",
+    "Demon Heart",
+    "D0GGY1337",
+    "Hacker Gem",
+    "Galactic Wolflord",
+    "Plasma One",
+    "Mechanical Robot",
+    "Space Soul",
+    "Royal Bee",
+    "Dominus Astra",
+    "Golden Trophy",
+    "Pot O' Gems",
+    "Super Basket",
+    "Prince Pumpkin",
+    "Wicked Harvest",
+    "Inferno Leaf",
+    "Electro Leaf",
+    "Blizzard Leaf",
+    "Windy Leaf",
+    "Harvest Moon",
+    "Jack O' Ferno",
+    "Autumn Pyramidium",
+    "All Seeing Shard",
+    "Elite Lucid Leaf",
+    "Duke Federation",
+    "Dominus Infernus",
+    "Wayfarer Dogcat",
+    "Pumpkin Spice",
+    "The Cornucopia",
+    "Autumn Koi",
+    "Moth Kitty",
+    "Autumn Trophy",
+    "The Domino Crown",
+    "Skull Knight",
+    "The Pumpking",
+    "Ghostly Shard",
+    "Radiant Skull",
+    "Malevolent Skull",
+    "Radiant Sinister Lord",
+    "Sinister TV",
+    "Blaze",
+    "Demondeeri",
+    "Luminant Challenger",
+    "Hollow Reflection"
+}
+
+for _, v in ipairs(service15:GetBountyPets()) do
+    if not v25.find(secretPets, v) then
+        v25.insert(secretPets, v)
+    end
+end
+
+module.SecretPets = secretPets
+
+function module.IsSecretItem(_, p22)
+    local replacedText = p22:gsub("Mythic ", "")
+
+    for i = 1, #secretPets do
+        if replacedText == secretPets[i] then
+            return true
+        end
+    end
+
+    return false
+end
+function module.GivePetFromEgg(p23, player, p25, p26, p27: number)
+    if not p27 then
+        p27 = 1
+    end
+
+    local t5: {[any]: any} = {}
+    local u92: boolean = false
+    local u93: boolean = false
+    local v94 = service2.OwnedPasses[player.Name]
+    local v95 = service13:GetBoosts(player)
+    local v96, v97 = v30(player, v94, v95)
+
+    v94 = v96
+    v95 = v97
+    service16:IncrementChallenge(player, "Eggs", p27)
+
+    local v98 = service2:GetPlayerData(player)
+    local v99 = v23:HasUnlocked(v98, "x1.25 Luck")
+    local v100 = fallMasteryUtil.GetMultiplier(v98[v24.FALL_MASTERY], "EggLuck", p25)
+
+    for _ = 1, p27 do
+        if p25:find("Egg") then
+            local v102 = nil
+
+            if not p26 then
+                v102 = service15:Roll(p25, v94, v95, v99, nil, v100)
+            end
+
+            local u103 = v102
+
+            if not u103 then
+                u103 = p23:GetRandomPetFromEgg(p25, p26, v94, v95, v99, v100)
+            end
+
+            local u104: boolean = false
+
+            if v21[u103].Mythic then
+                local n1: number = 200
+
+                if v95["3xMythicChance"] then
+                    n1 /= 3
+                end
+
+                if services:GetService("Is2xMythicEnabled")() then
+                    n1 /= 2
+                end
+
+                local floored = math.floor(n1 + 0.5)
+
+                u104 = random:NextInteger(1, floored) == 1
+
+                if u104 then
+                    local v107 = u103
+
+                    u103 = "Mythic " .. v107
+                end
+            end
+
+            local n2: number = 100
+
+            if v95["3xShinyChance"] then
+                n2 /= 3
+            end
+
+            if services:GetService("Is2xShinyEnabled")() then
+                n2 /= 2
+            end
+
+            local floored = math.floor(n2 + 0.5)
+            local u110: boolean = random:NextInteger(1, floored) == 1
+            local rarity = v21[u103].Rarity
+
+            if rarity == "Common" then
+                service16:IncrementChallenge(player, "Commons", 1)
+            elseif rarity == "Unique" then
+                service16:IncrementChallenge(player, "Uniques", 1)
+            elseif rarity == "Rare" then
+                service16:IncrementChallenge(player, "Rares", 1)
+            elseif rarity == "Epic" then
+                service16:IncrementChallenge(player, "Epics", 1)
+            elseif rarity == "Legendary" then
+                service16:IncrementChallenge(player, "Legendaries", 1)
+            end
+
+            local replacedText = u103:gsub("Mythic ", "")
+            local v113 = service2:GetPlayerData(player, v24.COLLECTED_ITEMS)
+            local v114 = service10:HasDiscoveredItem(v113, replacedText)
+            local v115, v116 = service10:AddItemToCategory(v113, (if u110 == true then "Shiny " else "") .. (v102 and service15.IndexName or p25), replacedText)
+
+            pcall(function()
+                if u104 and v25.find(secretPets, replacedText) then
+                    services:GetService("TitlesService"):GiveTitle(player, "Colossus")
+                end
+            end)
+
+            local v117 = service2:GetPlayerData(player, v24.AUTODELETE)
+
+            v102 = v114 and not u104
+
+            if v102 then
+                v102 = not p23:IsSecretItem(replacedText) and v117[replacedText] == true
+            end
+
+            if not v102 then
+                local insert = v25.insert
+                local v119 = service2:GetPlayerData(player, v24.PETS)
+                local guid: string = game:GetService("HttpService"):GenerateGUID(false)
+
+                insert(v119, {
+                    guid,
+                    u103,
+                    u103,
+                    1,
+                    0,
+                    false,
+                    false,
+                    u110,
+                    0
+                })
+                u92 = true
+            end
+
+            local replacedText2 = u103:gsub("Mythic ", "")
+
+            v113 = v21[replacedText2]
+
+            if rumbleAPI and v113 and (not not p23:IsSecretItem(replacedText2) or v113.ShouldLog == true) then
+                task.spawn(function()
+                    rumbleAPI:SpecialHatchAsync(player, u103, u110)
+                end)
+            end
+
+            v117 = p25:find("Egg")
+
+            local v122, v123 = IsEffectsEnabled(player, p25, u103)
+
+            if (v117 and v21 or v22)[u103].Rarity == "Legendary" and v122 == true then
+                delay(5, function()
+                    service:FireAllClients("DisplayLegendaryInChat", player.Name, u103, v123, u110, u104)
+                end)
+            end
+
+            if v116 then
+                service2:SetPlayerData(player, v115, v24.COLLECTED_ITEMS)
+            end
+
+            v25.insert(t5, { u103, v116, u110, v102 })
+        else
+            local v124 = p23:GetRandomPetFromEgg(p25, p26, v94, v95, v99)
+            local v125 = service2:GetPlayerData(player, v24.COLLECTED_ITEMS)
+            local v126 = service10:HasDiscoveredItem(v125, v124)
+            local v127, v128 = service10:AddItemToCategory(v125, p25, v124)
+            local v129 = service2:GetPlayerData(player, v24.AUTODELETE)
+            local v130 = v126
+
+            if v130 then
+                v130 = not p23:IsSecretItem(v124) and v129[v124] == true
+            end
+
+            if not v130 then
+                local v131 = v25.insert
+                local v132 = service2:GetPlayerData(player, v24.HATS)
+                local v133: string = game:GetService("HttpService"):GenerateGUID(false)
+
+                v131(v132, { v133, v124, false, false })
+                u93 = true
+            end
+
+            if rumbleAPI and p23:IsSecretItem(v124) then
+                task.spawn(function()
+                    rumbleAPI:SpecialHatchAsync(player, v124, false, "hat")
+                end)
+            end
+
+            if (p25:find("Egg") and v21 or v22)[v124].Rarity == "Legendary" then
+                delay(5, function()
+                    service:FireAllClients("DisplayLegendaryHatInChat", player.Name, v124)
+                end)
+            end
+
+            if v128 then
+                service2:SetPlayerData(player, v127, v24.COLLECTED_ITEMS)
+            end
+
+            v25.insert(t5, { v124, v128, false, v130 })
+        end
+    end
+
+    if u93 then
+        service2:SendPlayerUpdateSignal(player, v24.HATS)
+    end
+
+    if u92 then
+        service2:SendPlayerUpdateSignal(player, v24.PETS)
+    end
+
+    service:FireClient(player, "OpenEgg", p25, #t5 == 1 and t5[1][1] or t5, t5[1][2], t5[1][3], t5[1][4])
+    service12:IncrementAchievement(player, "Eggs Hatched", p27)
+    services:GetService("TitlesService"):RefreshTitles(player)
+    spawn(function()
+        service14:AwardPetBadges(player)
+    end)
+end
+function module.InitializeServer(_)
+end
+function module.MultiHatchEgg(p29, p30, p31)
+    local v138 = CFrame.Angles(0, 3.141592653589793, 0)
+    local n1 = CFrame.new(0, 0, -3.5) * v138
+    local n2: number = 3
+
+    v138 = function()
+        n2 -= 1
+
+        return n2 == 0
+    end
+
+    for i = 1, 3 do
+        local n3: number = i - 2
+
+        spawn(function()
+            local v230 = p31[i][1]
+            local v231 = p31[i][2]
+            local vector3 = Vector3.new(n3 * 2.5, 0, 0)
+
+            p29:HatchEgg(p30, v230, v231, n1 + vector3, i, p31[i][3], p31[i][4], v138)
+        end)
+    end
+end
+
+local service18 = services:GetService("Is2xSpeedEnabled")
+
+local function getHatchTimingState(p32)
+    local v145
+    local t6
+
+    if runService:IsServer() then
+        v145 = service2:GetPlayerData(p32)
+        t6 = service2.OwnedPasses[p32.Name] or {}
+    else
+        v145 = service:Call("GetClientData")
+        t6 = service:Call("GetOwnedPasses")
+    end
+
+    local u148: boolean = service13:GetBoosts(p32)["2xHatchSpeed"] == true
+    local v149 = v23:HasUnlocked(v145, "Faster Hatch")
+
+    return u148, v149, t6["Fast Hatch"] == true, service18()
+end
+local function getLegacyHatchDuration(p33, p34, p35, p36)
+    local n1: number = if p33 then 2.5 else 5.5
+
+    if p34 then
+        n1 *= 0.6
+    end
+
+    if p35 then
+        n1 *= 0.5
+    end
+
+    if p36 then
+        n1 *= 0.75
+    end
+
+    return n1
+end
+local function getHatchAnimationSpeed(p37, p38, p39, p40)
+    local n1: number = if p37 then 1.75 else 1
+
+    if p38 then
+        n1 /= 0.9
+    end
+
+    if p39 then
+        n1 /= 0.75
+    end
+
+    if p40 then
+        n1 /= 0.75
+    end
+
+    return n1
+end
+local function getNextHatchShakeLength(p41, p42)
+    return p41 / 1.15 / (p42 > 1.5 and p42 / 1.5 or p42)
+end
+local function getHatchPresentationDuration(p43)
+    local n1 = 3.5 / p43
+    local n2 = 0.25
+
+    repeat
+        n1 += n2
+        n2 = n2 / 1.15 / (p43 > 1.5 and p43 / 1.5 or p43)
+    until n2 <= 0.015
+
+    return n1
+end
+function module.GetHatchDuration(_, p45)
+    local v167, v168, v169, v170 = getHatchTimingState(p45)
+    local n1: number = if v167 then 2.5 else 5.5
+
+    if v168 then
+        n1 *= 0.6
+    end
+
+    if v169 then
+        n1 *= 0.5
+    end
+
+    if v170 then
+        n1 *= 0.75
+    end
+
+    return n1
+end
+function module.GetHatchAnimationSpeed(_, p47)
+    local v174, v175, v176, v177 = getHatchTimingState(p47)
+    local n1: number = if v174 then 1.75 else 1
+
+    if v175 then
+        n1 /= 0.9
+    end
+
+    if v176 then
+        n1 /= 0.75
+    end
+
+    if v177 then
+        n1 /= 0.75
+    end
+
+    return n1
+end
+function module.GetHatchCooldown(_, p49)
+    local v181, v182, v183, v184 = getHatchTimingState(p49)
+    local n1: number = if v181 then 2.5 else 5.5
+
+    if v182 then
+        n1 *= 0.6
+    end
+
+    if v183 then
+        n1 *= 0.5
+    end
+
+    if v184 then
+        n1 *= 0.75
+    end
+
+    local n2: number = if v181 then 1.75 else 1
+
+    if v182 then
+        n2 /= 0.9
+    end
+
+    if v183 then
+        n2 /= 0.75
+    end
+
+    if v184 then
+        n2 /= 0.75
+    end
+
+    local n3: number = 3.5 / n2
+    local n4 = 0.25
+
+    repeat
+        n3 += n4
+        n4 = n4 / 1.15 / (n2 > 1.5 and n2 / 1.5 or n2)
+    until n4 <= 0.015
+
+    local roundedUp = math.ceil(n3 / 0.1)
+
+    return (math.max(n1, roundedUp * 0.1))
+end
+function module.HatchEgg(p50, p51, p52, p53, p54, p55, p56, p57, p58)
+    if not p54 then
+        p54 = n1
+    end
+
+    local LocalPlayer = game.Players.LocalPlayer
+    local screenGui = LocalPlayer.PlayerGui.ScreenGui
+    local v201 = service17:GetStorage()
+    local u202 = nil
+    local clone = nil
+    local clone3 = nil
+    local cFrameValue = nil
+    local connection = nil
+    local u207 = nil
+    local u208 = nil
+    local clone2 = nil
+    local u210: boolean = false
+
+    local function cleanup()
+        if u210 then
+            return
+        end
+
+        u210 = true
+
+        if u208 then
+            u208:Disconnect()
+        end
+
+        if u207 then
+            u207:Disconnect()
+        end
+
+        if connection then
+            connection:Disconnect()
+        end
+
+        if clone2 then
+            clone2:Destroy()
+        end
+
+        if clone then
+            clone:Destroy()
+        end
+
+        if cFrameValue then
+            cFrameValue:Destroy()
+        end
+
+        if clone3 then
+            clone3:Destroy()
+        end
+
+        if not p58 or p58() then
+            LocalPlayer.CameraMinZoomDistance = 0
+            v201.StatsFrame.Parent = screenGui
+            v201.MainButtons.Parent = screenGui
+            v201.HeightMeter.Parent = screenGui
+            v201.Settings.Parent = screenGui
+
+            if u202 then
+                u202:Destroy()
+            end
+        end
+    end
+
+    local v212, v213 = xpcall(function()
+        v201.StatsFrame.Parent = nil
+        v201.MainButtons.Parent = nil
+        v201.Settings.Parent = nil
+        v201.HeightMeter.Parent = nil
+        service17:DisplayFrame("")
+
+        local v233 = p50:GetHatchAnimationSpeed(LocalPlayer)
+
+        u202 = p55 and (screenGui:FindFirstChild("MultiPetHatch") or script.MultiPetHatch:Clone()) or script.PetHatch:Clone()
+
+        local v234 = p51
+
+        if typeof(v234) == "number" then
+            v234 = GetNameFromID(v234)
+        end
+
+        local v235 = v234:find("Egg")
+        local v236 = v235 and v21 or v22
+        local v237 = v236[p52].Rarity
+
+        if p52:sub(1, 6) == "Mythic" then
+            v237 = "Mythic"
+        end
+
+        if not p55 then
+            u202.BackgroundTransparency = 1
+            u202.Pet.ImageTransparency = 1
+            u202.Pet.PetName.TextTransparency = 1
+            u202.Pet.PetName.TextStrokeTransparency = 1
+            u202.Pet.Rarity.TextTransparency = 1
+            u202.Pet.Rarity.TextStrokeTransparency = 1
+            u202.Pet.Discovered.TextTransparency = 1
+            u202.Pet.Discovered.TextStrokeTransparency = 1
+            u202.Skip.Visible = false
+            u202.Pet.Deleted.TextTransparency = 1
+            u202.Pet.Deleted.TextStrokeTransparency = 1
+            u202.Pet.Deleted.Visible = p57 == true
+            u202.Pet.Rarity.Text = v237
+            u202.Pet.PetName.Text = (if p56 == true then "Shiny " else "") .. p52
+            u202.Pet.PetName.TextColor3 = p56 == true and Color3.new(1, 1, 0) or Color3.new(1, 1, 1)
+            service9:SetRarity(u202.Pet.Rarity, v237)
+            u202.Parent = screenGui
+        else
+            if not u202.Parent then
+                u202.Parent = screenGui
+                u202.Skip.Visible = false
+            end
+
+            for _, v in pairs(u202:GetChildren()) do
+                if v.Name ~= "Skip" then
+                    v.BackgroundTransparency = 1
+                    v.ImageTransparency = 1
+                    v.PetName.TextTransparency = 1
+                    v.PetName.TextStrokeTransparency = 1
+                    v.Rarity.TextTransparency = 1
+                    v.Rarity.TextStrokeTransparency = 1
+                    v.Discovered.TextTransparency = 1
+                    v.Discovered.TextStrokeTransparency = 1
+                    v.Deleted.TextTransparency = 1
+                    v.Deleted.TextStrokeTransparency = 1
+                end
+            end
+
+            local v240 = u202["Pet" .. p55]
+
+            v240.Deleted.Visible = p57 == true
+            v240.Rarity.Text = v237
+            v240.PetName.Text = p52
+            v240.PetName.Text = (if p56 == true then "Shiny " else "") .. p52
+            v240.PetName.TextColor3 = p56 == true and Color3.new(1, 1, 0) or Color3.new(1, 1, 1)
+            service9:SetRarity(v240.Rarity, v237)
+        end
+
+        local v241 = (typeof(p51) == "number" or p51:find("Egg")) and assets.Eggs or assets.Crates
+
+        clone = (v241:FindFirstChild(p51) or v241["Default Egg"]):Clone()
+        clone.PrimaryPart.Transparency = 1
+        clone.Name = "Egg"
+        clone.Parent = workspace
+
+        for _, v in pairs(clone:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
+            end
+        end
+
+        LocalPlayer.CameraMinZoomDistance = 6
+        cFrameValue = Instance.new("CFrameValue")
+        connection = service7.RenderStepped:Connect(function()
+            clone:SetPrimaryPartCFrame(CurrentCamera.CFrame * p54 * cFrameValue.Value)
+        end)
+        cFrameValue.Value = CFrame.new(0, 3, 0)
+
+        local v244 = cFrameValue
+        local tweenInfo = TweenInfo.new(1 / v233, Enum.EasingStyle.Bounce, Enum.EasingDirection.Out, 0, false, 0)
+
+        service6:Create(v244, tweenInfo, { Value = CFrame.new() }):Play()
+
+        if not p55 or p55 == 1 then
+            delay(0.25 / v233, function()
+                if u210 then
+                    return
+                end
+
+                service8:Play({ Name = "Whoosh", Volume = 0.5, Parent = clone })
+            end)
+            delay(0.6 / v233, function()
+                if u210 then
+                    return
+                end
+
+                service8:Play({ Name = "Whoosh", Volume = 0.5, Parent = clone })
+            end)
+        end
+
+        wait(0.75 / v233)
+        v241 = 0
+        v234 = 0.25
+        v235 = 30
+        clone2 = script.Glow:Clone()
+        tick()
+
+        while true do
+            wait(v234)
+            v241 += 1
+
+            if v241 == 3 then
+                v241 = 1
+            end
+
+            local cFrameAngles = CFrame.Angles
+            local v247 = math.rad(v235 * (if v241 == 1 then 1 else -1))
+            local cFrame = cFrameAngles(0, 0, v247)
+
+            v247 = cFrameValue
+
+            local tweenInfo2 = TweenInfo.new(v234, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+
+            service6:Create(v247, tweenInfo2, { Value = cFrame }):Play()
+            v234 = v234 / 1.15 / (v233 > 1.5 and v233 / 1.5 or v233)
+            v235 /= 1.025
+
+            if not p55 or p55 == 1 then
+                service8:Play({ Name = "Pop_Soft", Volume = 0.75, Parent = clone })
+            end
+
+            if v234 <= 0.015 then
+                break
+            end
+        end
+
+        tick()
+        clone3 = ((typeof(p51) == "number" or p51:find("Egg")) and assets.Pets or assets.Hats)[p52]:Clone()
+
+        for _, v in pairs(clone3:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Anchored = true
+            end
+        end
+
+        clone3.Parent = game.Workspace
+        clone3:SetPrimaryPartCFrame(CurrentCamera.CFrame * p54)
+
+        if p56 == true then
+            clone2.Color = ColorSequence.new(Color3.new(1, 1, 0), Color3.new(1, 1, 0))
+            v26:Modify(clone3)
+        end
+
+        for _, v in pairs(clone3:GetDescendants()) do
+            if v:IsA("Trail") then
+                v.Enabled = false
+            end
+        end
+
+        for _, v in pairs(clone3:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
+            end
+        end
+
+        local v256 = cFrameValue
+        local tweenInfo3 = TweenInfo.new(0.01, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+
+        service6:Create(v256, tweenInfo3, { Value = CFrame.new() }):Play()
+        u207 = service7.RenderStepped:connect(function()
+            local v268 = not typeof(p51) == "number" and p51:find("Crate")
+            local v269 = clone3
+            local n1 = CurrentCamera.CFrame * cFrameValue.Value * p54
+            local cFrame = CFrame.new(p55 and -1 * (p55 - 2) or 0, -1, 1.5)
+            local cFrameAngles = CFrame.Angles
+            local v273 = math.rad(if v268 then 0 else if not p55 then 20 else 20 * (p55 - 2))
+            local v274 = cFrameAngles(-0.17453292519943295, v273, 0)
+
+            v269:SetPrimaryPartCFrame(n1 * cFrame * v274)
+        end)
+
+        if clone.Egg:IsA("BasePart") then
+            local cloneEgg = clone.Egg
+            local tweenInfo4 = TweenInfo.new(0.5 / v233, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+
+            service6:Create(cloneEgg, tweenInfo4, { Transparency = 1 }):Play()
+            clone2.Parent = clone.Egg
+
+            for _, v in pairs(clone.Egg:GetChildren()) do
+                if v:IsA("ParticleEmitter") then
+                    v.Enabled = false
+                end
+            end
+        else
+            for _, v in pairs(clone.Egg:GetDescendants()) do
+                if v:IsA("BasePart") then
+                    v.Transparency = 1
+                    v:ClearAllChildren()
+                end
+            end
+
+            clone2.Parent = clone.Egg.PrimaryPart
+        end
+
+        v235 = service:Call("GetQuality")
+
+        if not v235 then
+            clone2:Emit(50)
+        end
+
+        service8:Play({ Name = "Poof2", Volume = 0.75, Parent = clone })
+        service8:Play({ Name = "Shiny", Volume = 1, Parent = clone })
+
+        if v236[p52].Rarity == "Legendary" and IsEffectsEnabled(LocalPlayer, p51, p52) == true then
+            service8:Play({ Name = "Special_Unlock", Volume = 1, Parent = clone })
+
+            for _, v in pairs(game.ReplicatedStorage.Assets.LegendaryEffects:GetChildren()) do
+                local clone4 = v:Clone()
+
+                clone4.Enabled = false
+                clone4.Parent = clone.Egg:IsA("BasePart") and clone.Egg or clone.Egg.PrimaryPart
+
+                if not v235 then
+                    clone4:Emit(v.Value.Value)
+                end
+            end
+        end
+
+        if p53 then
+            delay(0.5 / v233, function()
+                if u210 then
+                    return
+                end
+
+                local v275 = not p55 and u202.Pet or u202["Pet" .. p55]
+
+                service8:Play({ Name = "NewSpecies", Volume = 0.5, Parent = clone })
+                v275.Discovered.Text = ("New %s Discovered!"):format(if typeof(p51) == "number" or p51:find("Egg") then "Pet" else "Hat"):upper()
+
+                local discovered = v275.Discovered
+                local tweenInfo5 = TweenInfo.new(0.5 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                service6:Create(discovered, tweenInfo5, { TextTransparency = 0, TextStrokeTransparency = 0 }):Play()
+            end)
+        end
+
+        delay(0.5 / v233, function()
+            if u210 then
+                return
+            end
+
+            pcall(function()
+                local v278 = not p55 and u202.Pet or u202["Pet" .. p55]
+                local petName = v278.PetName
+                local tweenInfo6 = TweenInfo.new(0.5 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                service6:Create(petName, tweenInfo6, { TextTransparency = 0, TextStrokeTransparency = 0.75 }):Play()
+
+                local rarity = v278.Rarity
+                local tweenInfo7 = TweenInfo.new(0.5 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                service6:Create(rarity, tweenInfo7, { TextTransparency = 0, TextStrokeTransparency = 0.75 }):Play()
+
+                local deleted = v278.Deleted
+                local tweenInfo8 = TweenInfo.new(0.5 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                service6:Create(deleted, tweenInfo8, { TextTransparency = 0, TextStrokeTransparency = 0.5 }):Play()
+            end)
+        end)
+
+        local u267: boolean = false
+
+        v235 = function()
+            if not u267 and not u210 then
+                u267 = true
+                pcall(function()
+                    local v285 = not p55 and u202.Pet or u202:FindFirstChild("Pet" .. p55)
+
+                    if v285 then
+                        u202.Skip.Visible = false
+
+                        local v286 = cFrameValue
+                        local tweenInfo9 = TweenInfo.new(1 / v233, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+
+                        service6:Create(v286, tweenInfo9, { Value = CFrame.new(0, -10, 0) }):Play()
+
+                        local petName = v285.PetName
+                        local tweenInfo10 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                        service6:Create(petName, tweenInfo10, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                        local rarity = v285.Rarity
+                        local tweenInfo11 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                        service6:Create(rarity, tweenInfo11, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                        local discovered = v285.Discovered
+                        local tweenInfo12 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                        service6:Create(discovered, tweenInfo12, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                        local deleted = v285.Deleted
+                        local tweenInfo13 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                        service6:Create(deleted, tweenInfo13, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+                    end
+                end)
+                wait(1 / v233)
+                cleanup()
+
+                return
+            end
+        end
+        delay(1 / v233, function()
+            if u210 then
+                return
+            end
+
+            u202.Skip.Visible = true
+            wait(0.75 / v233)
+
+            if u267 then
+                return
+            end
+
+            if u210 then
+                return
+            end
+
+            u267 = true
+            pcall(function()
+                local v296 = not p55 and u202.Pet or u202:FindFirstChild("Pet" .. p55)
+
+                if v296 then
+                    u202.Skip.Visible = false
+
+                    local v297 = cFrameValue
+                    local tweenInfo14 = TweenInfo.new(1 / v233, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+
+                    service6:Create(v297, tweenInfo14, { Value = CFrame.new(0, -10, 0) }):Play()
+
+                    local petName = v296.PetName
+                    local tweenInfo15 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                    service6:Create(petName, tweenInfo15, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                    local rarity = v296.Rarity
+                    local tweenInfo16 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                    service6:Create(rarity, tweenInfo16, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                    local discovered = v296.Discovered
+                    local tweenInfo17 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                    service6:Create(discovered, tweenInfo17, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                    local deleted = v296.Deleted
+                    local tweenInfo18 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                    service6:Create(deleted, tweenInfo18, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+                end
+            end)
+            wait(1 / v233)
+            cleanup()
+        end)
+        pcall(function()
+            u208 = u202.Skip.MouseButton1Down:connect(function()
+                if u267 then
+                    return
+                end
+
+                if u210 then
+                    return
+                end
+
+                u267 = true
+                pcall(function()
+                    local v285 = not p55 and u202.Pet or u202:FindFirstChild("Pet" .. p55)
+
+                    if v285 then
+                        u202.Skip.Visible = false
+
+                        local v286 = cFrameValue
+                        local tweenInfo9 = TweenInfo.new(1 / v233, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+
+                        service6:Create(v286, tweenInfo9, { Value = CFrame.new(0, -10, 0) }):Play()
+
+                        local petName = v285.PetName
+                        local tweenInfo10 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                        service6:Create(petName, tweenInfo10, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                        local rarity = v285.Rarity
+                        local tweenInfo11 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                        service6:Create(rarity, tweenInfo11, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                        local discovered = v285.Discovered
+                        local tweenInfo12 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                        service6:Create(discovered, tweenInfo12, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                        local deleted = v285.Deleted
+                        local tweenInfo13 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                        service6:Create(deleted, tweenInfo13, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+                    end
+                end)
+                wait(1 / v233)
+                cleanup()
+            end)
+        end)
+        delay(3 / v233, function()
+            if u267 == true or u210 then
+                return
+            end
+
+            if u267 then
+                return
+            end
+
+            if u210 then
+                return
+            end
+
+            u267 = true
+            pcall(function()
+                local v285 = not p55 and u202.Pet or u202:FindFirstChild("Pet" .. p55)
+
+                if v285 then
+                    u202.Skip.Visible = false
+
+                    local v286 = cFrameValue
+                    local tweenInfo9 = TweenInfo.new(1 / v233, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+
+                    service6:Create(v286, tweenInfo9, { Value = CFrame.new(0, -10, 0) }):Play()
+
+                    local petName = v285.PetName
+                    local tweenInfo10 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                    service6:Create(petName, tweenInfo10, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                    local rarity = v285.Rarity
+                    local tweenInfo11 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                    service6:Create(rarity, tweenInfo11, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                    local discovered = v285.Discovered
+                    local tweenInfo12 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                    service6:Create(discovered, tweenInfo12, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+
+                    local deleted = v285.Deleted
+                    local tweenInfo13 = TweenInfo.new(0.25 / v233, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+
+                    service6:Create(deleted, tweenInfo13, { TextTransparency = 1, TextStrokeTransparency = 1 }):Play()
+                end
+            end)
+            wait(1 / v233)
+            cleanup()
+        end)
+    end, debug.traceback)
+
+    if not v212 then
+        cleanup()
+        warn(("[hatch] %s"):format(v213))
+    end
+end
+function module.SetEnding(p59)
+    local t7: {[any]: any} = { p59.Ending1, p59.Ending2, p59.Ending3 }
+
+    for i = 1, #t7 do
+        if t7[i] then
+            t7[i]()
+        end
+    end
+end
+
+return module

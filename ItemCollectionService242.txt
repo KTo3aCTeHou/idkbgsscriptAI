@@ -1,0 +1,1257 @@
+-- Script Path: game:GetService("ReplicatedStorage").Assets.Modules.ItemCollectionService
+-- Took 0.23s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local services = require(game.ReplicatedStorage.Assets.Modules.Services)
+local service = services:GetService("Library")
+local service2 = services:GetService("Network")
+local service3 = services:GetService("GuiService")
+local service4 = services:GetService("GUIDViewerService")
+local service5 = services:GetService("ImageService")
+local service16 = nil
+local service6 = services:GetService("ItemDataService")
+local service7 = services:GetService("RarityColorService")
+local service8 = services:GetService("ShinyColorService")
+local service9 = services:GetService("SecretBountyService")
+local service10 = services:GetService("KnownDupeMarker")
+local service17 = nil
+local v14 = service("table")
+local v15 = service("index")
+local v16 = service6("EggModule")
+local v17 = service6("PetModule")
+local v18 = service6("CrateModule")
+local v19 = service6("HatModule")
+local service9IndexName = service9.IndexName
+local LocalPlayer: Player = game:GetService("Players").LocalPlayer
+
+local function getItemsInContainer(p1)
+    local t3: {[any]: any} = {}
+
+    for i, v in ipairs((v16[p1] or v18[p1]).Rarities) do
+        t3[i] = v[1]
+    end
+
+    return t3
+end
+
+getItemsInContainer = function(p2)
+    local service11 = services:GetService("EggService")
+
+    return v14.find(service11.SecretPets, p2) ~= nil
+end
+
+local s1 = "Pets"
+local s2 = "Overworld"
+local u25 = false
+
+local function containsSecretItems(p15)
+    local v48 = v16[p15]
+
+    if v48 and v48.Ignore and #v48.Ignore > 0 then
+        return true
+    end
+
+    if v18[p15] and v18[p15].Ignore and #v18[p15].Ignore > 0 then
+        return true
+    end
+
+    return false
+end
+local function updateListTitle()
+    local title = service3:GetStorage().CollectionFrame.Main.Inner.Title
+    local s3: string = if u25 then " (Shiny)" else ""
+
+    if s1 == "Pets" then
+        title.Text = s2 .. s3
+    elseif s1 == "Limited" then
+        title.Text = "Limiteds" .. s3
+    elseif s1 == "Secret" then
+        title.Text = "Secrets" .. s3
+    elseif s1 == "Hats" then
+        title.Text = "Hats"
+    elseif s1 == "Trade" then
+        title.Text = "Trade History"
+    end
+end
+local function getLocalData(p16)
+    return service2:Call("GetClientData", p16)
+end
+
+local t1 = {}
+local players: Players = game:GetService("Players")
+
+local function getNameFromId(p17)
+    if t1[p17] then
+        return t1[p17]
+    end
+
+    local ok, result = pcall(function()
+        return players:GetNameFromUserIdAsync(p17)
+    end)
+
+    if not ok then
+        result = "Unknown"
+    end
+
+    t1[p17] = result
+
+    return result
+end
+
+local module: {[any]: any} = {
+    Rewards = {
+        Overworld = "Crazy Cat Stack",
+        ["Candy Land"] = "Gummy Pals",
+        ["Toy Land"] = "Teddy Bear",
+        ["Beach World"] = "Holy Crab",
+        Atlantis = "King Pufferfish",
+        ["Rainbow Land"] = "Rainbow Master",
+        Underworld = "Infernal Master",
+        ["Mystic Forest"] = "Chromatic Cube",
+        Heaven = "Holy Soul"
+    },
+    Eggs = {
+        {
+            "Overworld",
+            {
+                "Common Egg",
+                "Spotted Egg",
+                "Ice Shard Egg",
+                "Spikey Egg",
+                "Magma Egg",
+                "Crystal Egg",
+                "Lunar Egg",
+                "Void Shard Egg",
+                "Nightmare Egg",
+                "Hell Egg",
+                "Rainbow Egg"
+            }
+        },
+        {
+            "Candy Land",
+            {
+                "Ice Cream Egg",
+                "Gummy Egg",
+                "Slushy Egg",
+                "Jelly Egg",
+                "Dominus Egg"
+            }
+        },
+        {
+            "Toy Land",
+            { "Wind-up Egg", "Block Egg", "Toy Egg", "Rubber Egg", "Bee Egg" }
+        },
+        {
+            "Beach World",
+            {
+                "Coconut Egg",
+                "Sand Egg",
+                "Beach Egg",
+                "Balloon Egg",
+                "Water Egg",
+                "Crab Egg"
+            }
+        },
+        {
+            "Atlantis",
+            { "Kelp Egg", "Ocean Egg", "Darkness Egg", "Coral Egg", "Ancient Egg" }
+        },
+        {
+            "Rainbow Land",
+            { "Red Egg", "Orange Egg", "Colorful Egg", "Fancy Egg" }
+        },
+        {
+            "Underworld",
+            {
+                "Stone Egg",
+                "Obsidian Egg",
+                "Fire Egg",
+                "Evil Egg",
+                "Dark Egg",
+                "Sparkly Egg"
+            }
+        },
+        {
+            "Limited",
+            {
+                "Snowman Egg",
+                "Festive Egg",
+                "Christmas Egg",
+                "Globe Egg",
+                "Hot Cocoa Egg",
+                "Frost Egg",
+                "New Year Egg",
+                "100K Egg",
+                "Valentine Egg",
+                "Lucky Egg",
+                "300m Egg",
+                "Easter Egg",
+                "Summer Egg",
+                "400m Egg",
+                "July 4th Egg",
+                "Chocolate Egg",
+                "Pumpkin Egg",
+                "Halloween Egg",
+                "Twilight Egg",
+                "Skelly Egg",
+                "Mutant Egg",
+                "500m Egg",
+                "Candy Egg",
+                "Gift Egg",
+                "Tree Egg",
+                "Clown Egg",
+                "Cannon Egg",
+                "Magic Egg",
+                "Valentine's 2020 Egg",
+                "600m Egg",
+                "Shamrock Egg",
+                "Egg O' Gold",
+                "Leprechaun Egg",
+                "Clover Egg",
+                "Painted Egg",
+                "Basket Egg",
+                "Bunny Egg",
+                "Heavenly Egg",
+                "700M Egg",
+                "50th Update Egg",
+                "Earth Egg",
+                "Flower Egg",
+                "Blossom Egg",
+                "Vine Egg",
+                "Core Egg",
+                "800M Egg",
+                "Element Egg",
+                "Popcorn Egg",
+                "Sugar Egg",
+                "Exotic Egg",
+                "Stuffed Egg",
+                "Vacation Egg",
+                "Fruity Egg",
+                "Leaf Egg",
+                "Autumn Egg",
+                "Slime Egg",
+                "Candycorn Egg",
+                "Sinister Egg",
+                "Costume Egg",
+                "900M Egg",
+                "Split Egg",
+                "Gingerbread Egg",
+                "Blizzard Egg",
+                "Holly Egg",
+                "Christmasy Egg",
+                "2020 Egg",
+                "1B Egg",
+                "Royalty Egg",
+                "Heartful Egg",
+                "Lovely Egg",
+                "Golden Egg",
+                "St.Patricks Egg",
+                "Jackpot Egg",
+                "Luck'O Egg",
+                "Cracked Egg",
+                "Eastery Egg",
+                "Cosmic Egg",
+                "Corrupted Egg",
+                "Golf Egg",
+                "Wisp Egg",
+                "Ghost Egg",
+                "Hellish Egg",
+                "Candycane Egg",
+                "Frosted Egg",
+                "Shadow Egg",
+                "Wispful Egg",
+                "Space Crystal Egg",
+                "Alien Egg",
+                "Hacker Egg",
+                "Celebration Egg",
+                "Harvest Egg",
+                "Candle Egg",
+                "Wayfarer Egg",
+                "Skull Egg",
+                "Neon Pumpkin Egg",
+                "Malevolent Egg",
+                service9IndexName
+            }
+        },
+        {
+            "Mystic Forest",
+            {
+                "Mossy Egg",
+                "Spirit Egg",
+                "Mythical Egg",
+                "Mushroom Egg",
+                "Pastel Egg"
+            }
+        },
+        {
+            "Heaven",
+            { "Heaven Egg", "Halo Egg", "Demonic Egg" }
+        }
+    },
+    Crates = {
+        {
+            "Candy Land",
+            {
+                "Basic Crate",
+                "Sparkle Crate",
+                "Epic Crate",
+                "Winged Crate",
+                "Classic Crate"
+            }
+        },
+        {
+            "Toy Land",
+            { "Adurite Crate", "Headphone Crate" }
+        },
+        {
+            "Beach World",
+            { "Beach Crate", "Water Crate" }
+        },
+        {
+            "Atlantis",
+            { "Ocean Crate", "Underwater Crate" }
+        },
+        {
+            "Limited",
+            {
+                "50th Update Crate",
+                "Autumn Crate",
+                "Christmas Crate",
+                "Celebration Crate",
+                "Federation Crate"
+            }
+        },
+        {
+            "Heaven",
+            { "Demon Crate" }
+        }
+    },
+    AddItemToCategory = function(_, p4, p5, p6)
+        local v59 = v14.find(p4, p5, 1)
+        local v60 = nil
+
+        if not v59 then
+            v14.insert(p4, {
+                p5,
+                { p6 }
+            })
+            v60 = true
+        elseif not v14.find(p4[v59][2], p6) then
+            v14.insert(p4[v59][2], p6)
+            v60 = true
+        end
+
+        return p4, v60
+    end,
+    HasDiscoveredItem = function(_, p8, p9)
+        for _, v in ipairs(p8) do
+            if v14.find(v[2], p9) then
+                return true
+            end
+        end
+
+        return false
+    end,
+    NormalizeBountyItems = function(p10, p11)
+        if type(p11) == "table" then
+            for _, v in ipairs(p11) do
+                if type(v) == "table" and type(v[1]) == "string" and type(v[2]) == "table" then
+                    local v70 = v[1]
+                    local s1 = v70:sub(1, 6) == "Shiny " and "Shiny " .. service9IndexName or service9IndexName
+
+                    if v70 ~= s1 then
+                        local v72 = v[2]
+
+                        for i = #v72, 1, -1 do
+                            local v74 = v72[i]
+
+                            if service9:IsBountyPet(v74) then
+                                v14.remove(v72, i)
+                                p10:AddItemToCategory(p11, s1, v74)
+                            end
+                        end
+                    end
+                end
+            end
+
+            return p11
+        end
+
+        return p11
+    end,
+    HasItem = function(_, p13, p14)
+        local v78 = service2:Call("GetClientData", v15.COLLECTED_ITEMS)
+
+        for i = 1, #v78 do
+            if p13 == v78[i][1] then
+                if v14.find(v78[i][2], p14) then
+                    return true
+                end
+
+                return false
+            end
+        end
+
+        return false
+    end,
+    GetNonSecretItemsInContainer = function(_, p19)
+        if p19 == service9IndexName then
+            return service9:GetBountyPets()
+        end
+
+        local t4: {[any]: any} = {}
+
+        for _, v in ipairs((v16[p19] or v18[p19]).Rarities) do
+            local v85 = v[1]
+            local service12 = services:GetService("EggService")
+
+            if v14.find(service12.SecretPets, v85) == nil then
+                v14.insert(t4, v85)
+            end
+        end
+
+        return t4
+    end,
+    GetSecretItemsInContainer = function(_, p21)
+        if p21 == service9IndexName then
+            return service9:GetBountyPets()
+        end
+
+        local t5: {[any]: any} = {}
+
+        for _, v in ipairs((v16[p21] or v18[p21]).Rarities) do
+            local v92 = v[1]
+            local service13 = services:GetService("EggService")
+
+            if v14.find(service13.SecretPets, v92) ~= nil then
+                v14.insert(t5, v92)
+            end
+        end
+
+        return t5
+    end
+}
+
+t1 = function(p22, p23)
+    if not v16[p22] then
+        local v96 = v18[p22]
+    end
+
+    local v97 = service2:Call("GetClientData", v15.COLLECTED_ITEMS)
+    local v98 = if s1 == "Secret" then module:GetSecretItemsInContainer(p22) else module:GetNonSecretItemsInContainer(p22)
+    local t6 = {}
+    local v100 = p22
+
+    if p23 then
+        v100 = "Shiny " .. v100
+    end
+
+    for _, v in ipairs(v97) do
+        if v100 == v[1] then
+            t6 = v[2]
+
+            break
+        end
+    end
+
+    v100 = 0
+
+    for _, v in ipairs(v98) do
+        if v14.find(t6, v) then
+            v100 += 1
+        end
+    end
+
+    return v100, #v98
+end
+
+function module.GetIndexName(_, p25, p26, p27)
+    local text: string = tostring(p27)
+
+    return ("%s/%s/%s"):format(p25, p26, text)
+end
+local function updateRewards()
+    local list = service3:GetStorage().CollectionFrame.Main.Inner.Content.Holder.List
+    local v111 = service2:Call("GetClientData", v15.COLLECTED_ITEMS_CLAIMED_REWARDS)
+
+    for _, v in ipairs(list:GetChildren()) do
+        if v.Name == "EggReward" then
+            local WorldValue = v.World.Value
+            local ShinyValue = v.Shiny.Value
+            local CategoryValue = v.Category.Value
+            local t7 = {}
+
+            for _, iterValue in ipairs(module.Eggs) do
+                if WorldValue == iterValue[1] then
+                    t7 = iterValue[2]
+
+                    break
+                end
+            end
+
+            local n1 = 0
+            local n2 = 0
+
+            for _, iterValue2 in ipairs(t7) do
+                local v124, v125 = t1(iterValue2, ShinyValue)
+
+                n1 += v124
+                n2 += v125
+            end
+
+            v.Progress.Inner.Bar.Size = UDim2.new(n1 / n2, 0, 1, 0)
+            v.Progress.Inner.Progress.Text = ("%i/%i discovered"):format(n1, n2)
+
+            local v126 = module:GetIndexName(WorldValue, CategoryValue, ShinyValue)
+
+            CategoryValue = v14.find(v111, v126) ~= nil
+
+            if not (n1 >= n2) and not CategoryValue then
+                v.Claim.Visible = false
+                v.Progress.Size = UDim2.new(1, -110, 0, 40)
+                v.Item.ItemImage.ImageTransparency = 0.5
+                v.Item.ItemImage.ImageColor3 = Color3.fromRGB(0, 0, 0)
+                v.Item.Mystery.Visible = true
+                v.Item.Label.Visible = false
+            else
+                v.Claim.Visible = true
+                v.Progress.Size = UDim2.new(1, -250, 0, 40)
+                v.Item.ItemImage.ImageTransparency = 0
+                v.Item.ItemImage.ImageColor3 = Color3.fromRGB(255, 255, 255)
+                v.Item.Mystery.Visible = false
+                v.Item.Label.Visible = true
+            end
+
+            if not CategoryValue then
+                v.Claim.ImageTransparency = 0
+                v.Claim.Label.Text = "Claim"
+                v.Claim.Label.TextTransparency = 0
+                v.Claim.Label.TextStrokeTransparency = 0.5
+            else
+                v.Claim.ImageTransparency = 0.7
+                v.Claim.Label.Text = "Claimed"
+                v.Claim.Label.TextTransparency = 0.6
+                v.Claim.Label.TextStrokeTransparency = 0.9
+            end
+        end
+    end
+end
+local function updateListItemsVisibility()
+    local v127 = service3:GetStorage()
+
+    for _, v in ipairs(v127.CollectionFrame.Main.Inner.Content.Holder.List:GetChildren()) do
+        if v.Name == "TradeEntry" then
+            v.Visible = s1 == "Trade"
+        elseif v.Name == "EggReward" then
+            local v130 = v.World.Value
+            local v131 = v.Shiny.Value
+            local v132 = v.Category.Value
+
+            if s1 == "Pets" then
+                v.Visible = v130 == s2 and v131 == u25 and v132 == "Pet"
+            elseif s1 == "Limited" or s1 == "Secret" then
+                v.Visible = false
+            elseif s1 == "Hats" then
+                v.Visible = v130 == s2 and v132 == "Hat"
+            elseif s1 == "Trade" then
+                v.Visible = false
+            end
+        elseif v.Name == "EggEntry" then
+            local children = v.Items:GetChildren()
+
+            for i = #children, 1, -1 do
+                if not children[i]:IsA("ImageButton") then
+                    v14.remove(children, i)
+
+                    break
+                end
+            end
+
+            local v135 = v.World.Value
+            local ContainerValue = v.Container.Value
+            local v137 = v.Shiny.Value
+            local v138, v139 = t1(ContainerValue, v137)
+
+            if v138 >= v139 then
+                v.Progress.Size = UDim2.new(0, 25, 0, 25)
+                v.Progress.ImageColor3 = Color3.fromRGB(45, 221, 33)
+                v.Progress.Tick.Visible = true
+                v.Progress.Label.Visible = false
+            else
+                v.Progress.Size = UDim2.new(0, 36, 0, 25)
+                v.Progress.ImageColor3 = Color3.fromRGB(241, 232, 210)
+                v.Progress.Tick.Visible = false
+                v.Progress.Label.Text = ("%i/%i"):format(v138, v139)
+                v.Progress.Label.Visible = true
+            end
+
+            if v137 == u25 or s1 == "Hats" then
+                if s1 ~= "Pets" then
+                    if s1 ~= "Hats" then
+                        if s1 ~= "Limited" then
+                            if s1 == "Secret" then
+                                local v140 = v16[ContainerValue]
+                                local v141 = v18[ContainerValue]
+
+                                if not (if v140 and v140.Ignore and #v140.Ignore > 0 then true else if v141 and v141.Ignore and #v141.Ignore > 0 then true else false) then
+                                    v.Visible = false
+                                else
+                                    for _, iterValue in ipairs(children) do
+                                        iterValue.Visible = iterValue.Secret.Value == true
+                                    end
+
+                                    v.Visible = true
+                                end
+                            elseif s1 == "Trade" then
+                                v.Visible = false
+                            end
+                        elseif v135 == "Limited" then
+                            local u144: boolean = ContainerValue == service9IndexName
+
+                            for _, iterValue2 in ipairs(children) do
+                                iterValue2.Visible = u144 or iterValue2.Secret.Value == false
+                            end
+
+                            v.Visible = true
+                        else
+                            v.Visible = false
+                        end
+                    elseif v18[ContainerValue] and v135 ~= "Limited" and v135 == s2 then
+                        for _, iterValue3 in ipairs(children) do
+                            iterValue3.Visible = iterValue3.Secret.Value == false
+                        end
+
+                        v.Visible = true
+                    else
+                        v.Visible = false
+                    end
+                elseif v16[ContainerValue] and v135 ~= "Limited" and v135 == s2 then
+                    for _, iterValue4 in ipairs(children) do
+                        iterValue4.Visible = iterValue4.Secret.Value == false
+                    end
+
+                    v.Visible = true
+                else
+                    v.Visible = false
+                end
+            else
+                v.Visible = false
+            end
+        end
+    end
+end
+local function setWorldSelectorEnabled(p28, p29)
+    local worlds = service3:GetStorage().CollectionFrame.Main.Inner.Worlds
+
+    local function set(p30, p31)
+        p30.AutoButtonColor = p31
+        p30.Selectable = p31
+        p30.BackgroundTransparency = if p31 then 0 else 0.75
+        p30.ImageTransparency = if p31 then 0 else 0.75
+        p30.Title.TextTransparency = if p31 then 0 else 0.8
+        p30.Title.TextStrokeTransparency = if p31 then 0 else 0.95
+
+        for _, v in ipairs(p30.Border:GetChildren()) do
+            v.ImageTransparency = if p31 then 0 else 0.75
+        end
+    end
+
+    if p28 == "All" then
+        for _, v in ipairs(worlds:GetChildren()) do
+            if v:IsA("ImageButton") then
+                set(v, p29)
+            end
+        end
+
+        return
+    end
+
+    local foundChild = worlds:FindFirstChild(p28)
+
+    set(foundChild, p29)
+end
+local function toggleShiny(p32)
+    u25 = p32
+
+    local inner = service3:GetStorage().CollectionFrame.Main.Inner
+
+    inner.Regular.ImageTransparency = if not p32 then 0 else 0.4
+    inner.Regular.Label.TextTransparency = if not p32 then 0 else 0.25
+    inner.Regular.Label.TextStrokeTransparency = if not p32 then 0.7 else 0.85
+    inner.Shiny.ImageTransparency = if p32 then 0 else 0.4
+    inner.Shiny.Label.TextTransparency = if p32 then 0 else 0.25
+    inner.Shiny.Label.TextStrokeTransparency = if p32 then 0.7 else 0.85
+    updateListItemsVisibility()
+    updateListTitle()
+end
+local function selectWorld(p33)
+    local inner = service3:GetStorage().CollectionFrame.Main.Inner
+
+    for _, v in ipairs(inner.Worlds:GetChildren()) do
+        if v:IsA("ImageButton") then
+            local u164: boolean = p33 == v.Name
+            local v165 = u164 and Color3.fromRGB(241, 173, 0) or Color3.fromRGB(176, 169, 151)
+
+            v.BorderColor3 = v165
+            v.BorderSizePixel = if u164 then 3 else 1
+
+            for _, iterValue in ipairs(v.Border:GetChildren()) do
+                iterValue.ImageColor3 = v165
+            end
+        end
+    end
+
+    s2 = p33
+    inner.Content.Holder.CanvasPosition = Vector2.new(0, 0)
+    updateListItemsVisibility()
+    updateListTitle()
+end
+local function selectTab(p34)
+    local inner = service3:GetStorage().CollectionFrame.Main.Inner
+
+    inner.Shiny.Visible = p34 ~= "Trade" and p34 ~= "Hats"
+    inner.Regular.Visible = p34 ~= "Trade" and p34 ~= "Hats"
+
+    for _, v in ipairs(inner.Options:GetChildren()) do
+        if v:IsA("ImageButton") then
+            v.ImageColor3 = p34 == v.Name and Color3.fromRGB(0, 243, 255) or Color3.fromRGB(39, 180, 255)
+        end
+    end
+
+    if p34 == "Pets" then
+        setWorldSelectorEnabled("All", true)
+    elseif p34 == "Limited" or p34 == "Secret" or p34 == "Trade" then
+        setWorldSelectorEnabled("All", false)
+    elseif p34 == "Hats" then
+        local u172: boolean = false
+
+        for _, v in ipairs(module.Crates) do
+            local v175 = v[1]
+
+            if v175 == s2 and v175 ~= "Limited" then
+                u172 = true
+
+                break
+            end
+        end
+
+        if not u172 then
+            selectWorld("Candy Land")
+        end
+
+        setWorldSelectorEnabled("All", false)
+
+        for _, v in ipairs(module.Crates) do
+            local v178 = v[1]
+
+            if v178 ~= "Limited" then
+                setWorldSelectorEnabled(v178, true)
+            end
+        end
+    end
+
+    s1 = p34
+    inner.Content.Holder.CanvasPosition = Vector2.new(0, 0)
+    updateListItemsVisibility()
+    updateListTitle()
+end
+local function decodeTradeItem(p35, p36)
+    if type(p36) == "number" and p36 >= 2 then
+        return unpack(p35)
+    end
+
+    local v181, v182, v183, v184, v185 = unpack(p35)
+
+    return nil, v181, v182, v183, v184, v185, false
+end
+local function populateTradeOffer(parent, p38, p39)
+    local t8
+
+    for i, v in ipairs(p38) do
+        local v192
+        local v194
+        local v196
+        local v198
+        local v200
+        local v202
+        local v204
+
+        if type(p39) == "number" and p39 >= 2 then
+            local v205, v206, v207, v208, v209, v210, t8 = unpack(v)
+
+            v192 = v205
+            v194 = v206
+            v196 = v207
+            v198 = v208
+            v200 = v209
+            v202 = v210
+            v204 = t8
+        else
+            local v211, v212, v213, v214, v215 = unpack(v)
+
+            v192 = nil
+            v194 = v211
+            v196 = v212
+            v198 = v213
+            v200 = v214
+            v202 = v215
+            v204 = false
+        end
+
+        local s1: string = if v17[v194] then "Pet" else if v19[v194] then "Hat" else "Potion"
+        local clone = script.TradeEntryItem:Clone()
+
+        if s1 == "Pet" or s1 == "Hat" then
+            clone.Label.Text = v194
+            clone.PetImage.Image = service5(v194)
+        else
+            clone.Label.Text = services:GetService("GuiService"):GetPotionName({ "fakeid", v194 })
+            t8 = "Potion"
+            clone.PetImage.Image = service5(t8 .. v194)
+        end
+
+        if s1 ~= "Pet" then
+            if s1 == "Hat" or s1 == "Potion" then
+                clone.Level:Destroy()
+                clone.EnchantmentLevel:Destroy()
+            end
+        elseif v200 > 0 then
+            t8 = v202
+            services:GetService("EnchantService"):SetAppearance(clone.EnchantmentLevel, v200, t8)
+            clone.Level.Text = ("Lv %i"):format(v198)
+        else
+            clone.EnchantmentLevel:Destroy()
+            clone.Level.Text = ("Level %i"):format(v198)
+        end
+
+        local t9 = nil
+
+        if s1 == "Pet" and type(v192) == "string" then
+            t9 = {
+                v192,
+                v194,
+                [4] = v198,
+                [8] = v196,
+                [9] = v200,
+                [10] = v202,
+                [11] = if v204 == true then true else false
+            }
+        end
+
+        if s1 == "Hat" and type(v192) == "string" then
+            t9 = { v192, v194, false, false }
+            service10.SetKnown(t9, v204 == true)
+        end
+
+        service10.Apply(clone.Flag, t9)
+
+        if t9 then
+            t8 = t9
+            service4:Connect(clone, t8)
+        end
+
+        clone.LayoutOrder = i
+        clone.Parent = parent
+
+        if s1 == "Pet" and v196 then
+            t8 = true
+            service8:SetShiny(clone, t8, true)
+        end
+    end
+end
+function module.UpdateUI(_)
+    local list = service3:GetStorage().CollectionFrame.Main.Inner.Content.Holder.List
+    local v221 = service2:Call("GetClientData", v15.TRADE_HISTORY)
+    local v222 = math.min(10, #v221)
+    local t10: {[any]: any} = {}
+    local v224
+
+    for _, v in ipairs(list:GetChildren()) do
+        if v.Name == "TradeEntry" then
+            local StampValue = v.Stamp.Value
+
+            v224 = nil
+
+            for i = 1, v222 do
+                if StampValue == v221[i][2] then
+                    t10[i] = true
+                    v224 = i
+
+                    break
+                end
+            end
+
+            if not v224 then
+                v:Destroy()
+            else
+                v.LayoutOrder = v224
+            end
+        end
+    end
+
+    for i = 1, v222 do
+        local v230, value, v224, v232, v233, v234 = unpack(v221[i])
+
+        if v224 ~= LocalPlayer.UserId then
+            local v235 = v232
+
+            v232 = v224
+            v224 = v235
+            v235 = v234
+            v234 = v233
+            v233 = v235
+        end
+
+        if not t10[i] then
+            v224 = script.TradeEntry:Clone()
+            v224.LayoutOrder = i
+            v224.Stamp.Value = value
+
+            local dateText = os.date("!*t", value)
+            local t11: {[any]: any} = {
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec"
+            }
+
+            v224.Date.Text = ("~ %i %s %04i ~"):format(dateText.day, t11[dateText.month], dateText.year)
+            v224.You.Username.Text = LocalPlayer.Name
+            v224.Them.Username.Text = getNameFromId(v232)
+
+            local function configureOffer(p41, p42)
+                local u332: boolean = p42 > 8
+
+                if u332 then
+                    p41.UIGridLayout.CellSize = UDim2.new(0, 52, 0, 52)
+                end
+
+                local roundedUp = math.ceil(p42 / (if u332 then 4 else 3))
+                local v334 = math.max(1, roundedUp)
+
+                return 75 + (if u332 then 57 else 75) * v334
+            end
+
+            local items = v224.You.Items
+            local n1: number = #v233
+            local u241: boolean = n1 > 8
+
+            if u241 then
+                items.UIGridLayout.CellSize = UDim2.new(0, 52, 0, 52)
+            end
+
+            local roundedUp = math.ceil(n1 / (if u241 then 4 else 3))
+            local v243 = math.max(1, roundedUp)
+            local v244 = v224.Them.Items
+            local n2: number = #v234
+            local u246: boolean = n2 > 8
+
+            if u246 then
+                v244.UIGridLayout.CellSize = UDim2.new(0, 52, 0, 52)
+            end
+
+            local roundedUp2 = math.ceil(n2 / (if u246 then 4 else 3))
+            local v248 = math.max(1, roundedUp2)
+
+            populateTradeOffer(v224.You.Items, v233, v230)
+            populateTradeOffer(v224.Them.Items, v234, v230)
+
+            local uDim2New = UDim2.new
+            local v250 = math.max(75 + (if u241 then 57 else 75) * v243, 75 + (if u246 then 57 else 75) * v248)
+
+            v224.Size = uDim2New(1, -8, 0, v250)
+            v224.Parent = list
+        end
+    end
+
+    local v251 = service2:Call("GetClientData", v15.COLLECTED_ITEMS)
+
+    for _, v in ipairs(list:GetChildren()) do
+        if v.Name == "EggEntry" then
+            local v254 = v.Container.Value
+            local v255 = v.Shiny.Value
+
+            if v255 then
+                v254 = "Shiny " .. v254
+            end
+
+            local t12 = {}
+
+            for _, iterValue in ipairs(v251) do
+                if v254 == iterValue[1] then
+                    t12 = iterValue[2]
+
+                    break
+                end
+            end
+
+            for _, iterValue2 in ipairs(v.Items:GetChildren()) do
+                if iterValue2:IsA("ImageButton") then
+                    local u261: boolean = v14.find(t12, iterValue2.Item.Value) ~= nil
+
+                    iterValue2.Label.Visible = true
+                    iterValue2.Mystery.Visible = not u261
+                    iterValue2.PetImage.ImageColor3 = u261 and Color3.new(1, 1, 1) or Color3.new(0, 0, 0)
+                    iterValue2.PetImage.ImageTransparency = if u261 then 0 else 0.4
+
+                    if v255 and u261 then
+                        service8:SetShiny(iterValue2, true, true)
+                    end
+                end
+            end
+        end
+    end
+
+    updateRewards()
+    updateListItemsVisibility()
+end
+function module.CreateUI(p43)
+    local screenGui = LocalPlayer.PlayerGui.ScreenGui
+    local main = service3:GetStorage().CollectionFrame.Main
+    local mainUiScale = main.UIScale
+    local vector2 = Vector2.new(1200, 925)
+
+    screenGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+        local screenGuiAbsoluteSize = screenGui.AbsoluteSize
+
+        mainUiScale.Scale = math.min(screenGuiAbsoluteSize.x / vector2.x, screenGuiAbsoluteSize.y / vector2.y, 1)
+    end)
+
+    local holder = main.Inner.Content.Holder
+    local holderList = holder.List
+    local holderListUiListLayout = holderList.UIListLayout
+
+    holderListUiListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        holder.CanvasSize = UDim2.new(0, 0, 0, holderListUiListLayout.AbsoluteContentSize.y / mainUiScale.Scale)
+    end)
+
+    for _, v in ipairs(main.Inner.Options:GetChildren()) do
+        if v:IsA("ImageButton") then
+            v.MouseButton1Down:Connect(function()
+                selectTab(v.Name)
+            end)
+        end
+    end
+
+    for _, v in ipairs(main.Inner.Worlds:GetChildren()) do
+        if v:IsA("ImageButton") then
+            v.MouseButton1Down:Connect(function()
+                if v.AutoButtonColor then
+                    selectWorld(v.Name)
+                end
+            end)
+        end
+    end
+
+    main.Inner.Shiny.MouseButton1Down:Connect(function()
+        u25 = true
+
+        local inner = service3:GetStorage().CollectionFrame.Main.Inner
+
+        inner.Regular.ImageTransparency = 0.4
+        inner.Regular.Label.TextTransparency = 0.25
+        inner.Regular.Label.TextStrokeTransparency = 0.85
+        inner.Shiny.ImageTransparency = 0
+        inner.Shiny.Label.TextTransparency = 0
+        inner.Shiny.Label.TextStrokeTransparency = 0.7
+        updateListItemsVisibility()
+        updateListTitle()
+    end)
+    main.Inner.Regular.MouseButton1Down:Connect(function()
+        u25 = false
+
+        local inner = service3:GetStorage().CollectionFrame.Main.Inner
+
+        inner.Regular.ImageTransparency = 0
+        inner.Regular.Label.TextTransparency = 0
+        inner.Regular.Label.TextStrokeTransparency = 0.7
+        inner.Shiny.ImageTransparency = 0.4
+        inner.Shiny.Label.TextTransparency = 0.25
+        inner.Shiny.Label.TextStrokeTransparency = 0.85
+        updateListItemsVisibility()
+        updateListTitle()
+    end)
+
+    local color3 = Color3.fromRGB(221, 199, 152)
+    local color32 = Color3.fromRGB(221, 212, 190)
+
+    for _, v in ipairs(module.Eggs) do
+        local value = v[1]
+        local v279 = v[2]
+
+        for i = 0, 1 do
+            local u281: boolean = i == 1
+
+            for _, iterValue in ipairs(v279) do
+                local v284 = iterValue == service9IndexName and service9:GetBountyPets() or nil
+                local clone = script.EggEntry:Clone()
+
+                clone.LayoutOrder = if v284 then 1 else 0
+                clone.World.Value = value
+                clone.Container.Value = iterValue
+                clone.Shiny.Value = u281
+                clone.Icon.EggImage.Image = service5(iterValue)
+                clone.Icon.Label.Text = iterValue
+                clone.Icon.ImageColor3 = u281 and color3 or color32
+
+                local t13 = {}
+
+                if v284 then
+                    t13 = v284
+                    clone.Items.UIGridLayout.FillDirectionMaxCells = 5
+
+                    local roundedUp = math.ceil(#v284 / 5)
+                    local uDim2New = UDim2.new
+                    local v289 = math.max(135, roundedUp * 68 - 1)
+
+                    clone.Size = uDim2New(1, -8, 0, v289)
+                else
+                    for _, iterValue2 in ipairs(v16[iterValue].Rarities) do
+                        v14.insert(t13, iterValue2[1])
+                    end
+                end
+
+                for _, iterValue3 in ipairs(t13) do
+                    local clone2 = script.EggEntryItem:Clone()
+
+                    if not v17[iterValue3] then
+                        error(("no pet data for %s"):format(iterValue3))
+                    end
+
+                    local rarity = v17[iterValue3].Rarity
+
+                    clone2.ImageColor3 = u281 and color3 or color32
+                    clone2.Item.Value = iterValue3
+
+                    local clone2Secret = clone2.Secret
+                    local service14 = services:GetService("EggService")
+
+                    clone2Secret.Value = v14.find(service14.SecretPets, iterValue3) ~= nil
+                    clone2.Label.Text = if rarity == "Legendary" then "???" else rarity
+                    clone2.PetImage.Image = service5(iterValue3)
+                    service7:SetRarity(clone2.Label, rarity, true)
+                    clone2.Parent = clone.Items
+                end
+
+                clone.Parent = holderList
+            end
+        end
+    end
+
+    for _, v in ipairs(module.Crates) do
+        local v300 = v[1]
+
+        for _, iterValue4 in ipairs(v[2]) do
+            local clone3 = script.EggEntry:Clone()
+
+            clone3.LayoutOrder = -1
+            clone3.World.Value = v300
+            clone3.Container.Value = iterValue4
+            clone3.Shiny.Value = false
+            clone3.Icon.EggImage.Image = service5(iterValue4)
+            clone3.Icon.Label.Text = iterValue4:gsub("Crate", "Box")
+
+            local t14: {[any]: any} = {}
+
+            for _, iterValue5 in ipairs(v18[iterValue4].Rarities) do
+                v14.insert(t14, iterValue5[1])
+            end
+
+            for _, iterValue6 in ipairs(t14) do
+                local clone4 = script.EggEntryItem:Clone()
+                local v310 = v19[iterValue6].Rarity
+
+                clone4.Item.Value = iterValue6
+
+                local clone4Secret = clone4.Secret
+                local service15 = services:GetService("EggService")
+
+                clone4Secret.Value = v14.find(service15.SecretPets, iterValue6) ~= nil
+                clone4.Label.Text = if v310 == "Legendary" then "???" else v310
+                clone4.PetImage.Image = service5(iterValue6)
+                service7:SetRarity(clone4.Label, v310, true)
+                clone4.Parent = clone3.Items
+            end
+
+            clone3.Parent = holderList
+        end
+    end
+
+    local function claimReward(p44, p45, p46)
+        service2:FireServer("ClaimCollectionReward", p44, p45, p46)
+    end
+
+    for _, v in ipairs(module.Eggs) do
+        local v316 = v[1]
+        local v317 = v[2]
+
+        if v316 ~= "Limited" then
+            for i = 0, 1 do
+                local u319: boolean = i == 1
+                local clone5 = script.EggReward:Clone()
+
+                clone5.World.Value = v316
+                clone5.Shiny.Value = u319
+                clone5.Category.Value = "Pet"
+
+                local v321 = module.Rewards[v316]
+
+                clone5.Item.ItemImage.Image = service5(v321)
+                clone5.Item.Label.Text = ("%s"):format(v321)
+
+                if u319 then
+                    service8:SetShiny(clone5.Item, true, true)
+                end
+
+                clone5.Info.Text = ("Discover all%s %s pets"):format(if u319 then " shiny" else "", v316)
+                clone5.Claim.MouseButton1Down:Connect(function()
+                    if clone5.Claim.ImageTransparency > 0 then
+                        return
+                    end
+
+                    service2:FireServer("ClaimCollectionReward", v316, "Pet", u319)
+                end)
+                clone5.Parent = holderList
+            end
+        end
+    end
+
+    selectTab("Pets")
+    selectWorld("Overworld")
+    u25 = false
+
+    local inner = service3:GetStorage().CollectionFrame.Main.Inner
+
+    inner.Regular.ImageTransparency = 0
+    inner.Regular.Label.TextTransparency = 0
+    inner.Regular.Label.TextStrokeTransparency = 0.7
+    inner.Shiny.ImageTransparency = 0.4
+    inner.Shiny.Label.TextTransparency = 0.25
+    inner.Shiny.Label.TextStrokeTransparency = 0.85
+    updateListItemsVisibility()
+    updateListTitle()
+    p43:UpdateUI()
+    holder.CanvasSize = UDim2.new(0, 0, 0, holderListUiListLayout.AbsoluteContentSize.y / mainUiScale.Scale)
+
+    local screenGuiAbsoluteSize = screenGui.AbsoluteSize
+
+    mainUiScale.Scale = math.min(screenGuiAbsoluteSize.x / vector2.x, screenGuiAbsoluteSize.y / vector2.y, 1)
+end
+function module.InitializeClient(p47, p48)
+    service2 = p48
+    service16 = services:GetService("InputService")
+    service17 = services:GetService("EggService")
+    p47:CreateUI()
+end
+
+return module
