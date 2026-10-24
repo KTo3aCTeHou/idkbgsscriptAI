@@ -1,0 +1,94 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.RebornBalance
+-- Took 0.09s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local runService: RunService = game:GetService("RunService")
+local fFlags = nil
+
+local function get(p1)
+    if not fFlags then
+        if runService:IsServer() then
+            local library: Instance = game:GetService("ServerScriptService"):WaitForChild("Library")
+
+            fFlags = require(library:WaitForChild("FFlags"))
+        else
+            local client: Instance = game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("Client")
+
+            fFlags = require(client:WaitForChild("FFlags"))
+        end
+    end
+
+    return fFlags.Get(p1)
+end
+local function positive(p2)
+    if type(p2) == "number" and p2 == p2 and p2 > 0 and p2 < math.huge then
+        return p2
+    end
+
+    return nil
+end
+
+local module: {[any]: any} = {
+    FLAGS = {
+        exponent = "PSXReborn_CoinRewardExponent",
+        divisor = "PSXReborn_PetDamageDivisor",
+        floor = "PSXReborn_PetDamageFloor",
+        slots = "PSXReborn_EquipSlotsMult",
+        machines = "PSXReborn_HardcoreMachineCosts",
+        coinDiamonds = "PSXReborn_CoinDiamondMult"
+    },
+    NORMAL = { exponent = 0.6, divisor = 1, slots = 1, coinDiamonds = 1 },
+    FLOOR_FALLBACK = 1
+}
+
+function module.CoinRewardExponent()
+    local v10 = get(module.FLAGS.exponent)
+
+    return (if type(v10) == "number" and v10 == v10 and v10 > 0 and v10 < math.huge then v10 else nil) or module.NORMAL.exponent
+end
+function module.PetDamageFloor()
+    local v11 = get(module.FLAGS.floor)
+
+    if type(v11) == "number" and v11 == v11 and v11 >= 0 and v11 < math.huge then
+        return v11
+    end
+
+    return module.FLOOR_FALLBACK
+end
+function module.PetDamage(p3)
+    local v13 = get(module.FLAGS.divisor)
+    local typeName: string = type(v13)
+
+    return (math.max(p3 / ((if typeName == "number" and v13 == v13 and v13 > 0 and v13 < math.huge then v13 else nil) or module.NORMAL.divisor), module.PetDamageFloor()))
+end
+function module.EquipSlotsMult()
+    local v15 = get(module.FLAGS.slots)
+
+    return (if type(v15) == "number" and v15 == v15 and v15 > 0 and v15 < math.huge then v15 else nil) or module.NORMAL.slots
+end
+function module.CoinDiamondMult()
+    local v16 = get(module.FLAGS.coinDiamonds)
+
+    return (if type(v16) == "number" and v16 == v16 and v16 > 0 and v16 < math.huge then v16 else nil) or module.NORMAL.coinDiamonds
+end
+function module.HardcoreMachines()
+    return get(module.FLAGS.machines) == true
+end
+function module.MachineRows(p4, p5)
+    if not p5 and not module.HardcoreMachines() then
+        return p4.Normal
+    end
+
+    return p4.Hardcore
+end
+function module.MachineCost(p6, p7, p8)
+    if not p8 and not module.HardcoreMachines() then
+        return p6
+    end
+
+    return p7
+end
+
+return module

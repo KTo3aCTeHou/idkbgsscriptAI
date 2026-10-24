@@ -1,0 +1,89 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.RebornWhitelist
+-- Took 0.91s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local module: {[any]: any} = {
+    DEV_GAME_ID = 5349377275,
+    DEV_PLACE_ID = 114494790551582,
+    REMOTE = "Products: Whitelist Purchase",
+    Staff = {
+        [2882755487] = true,
+        [2878290231] = true,
+        [2213470865] = true,
+        [13365322] = true,
+        [19717956] = true,
+        [1210210] = true,
+        [2936917022] = true,
+        [3687735502] = true,
+        [3983340648] = true,
+        [1784060946] = true
+    },
+    Testers = {
+        [7900977804] = true,
+        [4783917429] = true,
+        [2431980881] = true,
+        [4296407906] = true,
+        [5132764076] = true,
+        [7364659264] = true,
+        [1744502396] = true,
+        [3808531078] = true,
+        [4682698602] = true,
+        [8023369079] = true,
+        [3679632298] = true,
+        [4036284588] = true,
+        [263277049] = true,
+        [1533791] = true,
+        [2704477372] = true,
+        [5199941972] = true,
+        [7842393931] = true,
+        [5630173987] = true,
+        [7841769174] = true,
+        [8310962419] = true,
+        [322878855] = true,
+        [3349906104] = true,
+        [7354770883] = true,
+        [3606958450] = true,
+        [2833994663] = true,
+        [4783963666] = true,
+        [653248807] = true,
+        [660900011] = true,
+        [691136] = true,
+        [11297821113] = true,
+        [948539870] = true,
+        [4491016525] = true,
+        [2917461919] = true,
+        [8070153482] = true,
+        [106492189] = true,
+        [5475866834] = true,
+        [7292231228] = true,
+        [98972406] = true,
+        [7847797932] = true
+    }
+}
+
+function module.ActiveAt(p1, p2)
+    return p1 == module.DEV_GAME_ID and p2 == module.DEV_PLACE_ID
+end
+function module.Listed(p3)
+    local u5: boolean = false
+
+    if type(p3) == "number" then
+        u5 = true
+
+        if module.Staff[p3] ~= true then
+            u5 = module.Testers[p3] == true
+        end
+    end
+
+    return u5
+end
+function module.AllowedAt(p4, p5, p6)
+    return module.ActiveAt(p5, p6) and module.Listed(p4)
+end
+function module.Allowed(player)
+    return module.AllowedAt(player.UserId, game.GameId, game.PlaceId)
+end
+
+return module
