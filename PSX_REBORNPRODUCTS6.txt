@@ -1,0 +1,476 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.RebornProducts
+-- Took 0.91s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local function isId(p1)
+    local u4: boolean = false
+
+    if type(p1) == "number" then
+        u4 = p1 > 0
+    end
+
+    return u4
+end
+
+local module: {[any]: any} = {
+    Passes = {
+        { Pass = "8 Pets Equipped", OldPassId = 18674288, ProductId = nil },
+        { Pass = "Teleport", OldPassId = 18674296, ProductId = nil },
+        { Pass = "Hoverboard", OldPassId = 18674298, ProductId = nil },
+        { Pass = "VIP", OldPassId = 18674305, ProductId = nil },
+        { Pass = "Triple Egg Open", OldPassId = 18674307, ProductId = nil },
+        { Pass = "Skip Egg Open", OldPassId = 18674321, ProductId = nil },
+        { Pass = "Pet Storage", OldPassId = 18674317, ProductId = nil },
+        { Pass = "Super Pet Storage", OldPassId = 18829757, ProductId = nil },
+        { Pass = "Lucky", OldPassId = 21583760, ProductId = nil },
+        { Pass = "Mythical Hunter", OldPassId = 21641016, ProductId = nil },
+        { Pass = "Magic Eggs", OldPassId = 22596039, ProductId = nil },
+        { Pass = "Magnet", OldPassId = 26398305, ProductId = nil },
+        { Pass = "Shiny Hunter", OldPassId = 109685917, ProductId = nil },
+        { Pass = "Secret Hunter", OldPassId = 122535467, ProductId = nil }
+    },
+    SellPsxGamepasses = true,
+    FreePasses = { ["Auto Hatch"] = 21176989 },
+    PassWeek = {
+        Name = "PSX Gamepasses for 7 Days",
+        ProductId = 3721371325,
+        Seconds = 604800
+    },
+    Groups = {
+        Diamonds = false,
+        Boosts = false,
+        RankUps = false,
+        Booths = false,
+        DarkMatter = false,
+        HugeMachine = false,
+        ExclusiveEggs = false,
+        Upgrades = false,
+        EventReset = false,
+        LazarGun = false,
+        Banks = false
+    },
+    Retired = {
+        ["Triple Damage"] = true,
+        ["Triple Diamonds"] = true,
+        ["The Boost Bundle"] = true
+    },
+    DisabledPasses = { ["Shiny Hunter"] = true, ["Secret Hunter"] = true },
+    Products = {
+        ["Tiny Diamonds"] = { Group = "Diamonds", OldId = 1182920364, ProductId = nil },
+        ["Medium Diamonds"] = { Group = "Diamonds", OldId = 1182920534, ProductId = nil },
+        ["Large Diamonds"] = { Group = "Diamonds", OldId = 1182920681, ProductId = nil },
+        ["Massive Diamonds"] = { Group = "Diamonds", OldId = 1182920682, ProductId = nil },
+        ["Ultra Lucky"] = { Group = "Boosts", OldId = 1187661029, ProductId = nil },
+        ["Super Lucky"] = { Group = "Boosts", OldId = 1182922898, ProductId = nil },
+        ["Triple Coins"] = { Group = "Boosts", OldId = 1182922899, ProductId = nil },
+        ["Triple Damage"] = { Group = "Boosts", OldId = 1204528877, ProductId = nil },
+        ["Triple Diamonds"] = { Group = "Boosts", OldId = 1520302666, ProductId = nil },
+        ["The Boost Bundle"] = { Group = "Boosts", OldId = 1204527221, ProductId = nil },
+        ["Instant Rank Up 1"] = { Group = "RankUps", OldId = 1192856067, ProductId = nil },
+        ["Instant Rank Up 2"] = { Group = "RankUps", OldId = 1192856065, ProductId = nil },
+        ["Instant Rank Up 3"] = { Group = "RankUps", OldId = 1192856064, ProductId = nil },
+        ["Instant Rank Up 4"] = { Group = "RankUps", OldId = 1192856066, ProductId = nil },
+        ["Instant Rank Up 5"] = { Group = "RankUps", OldId = 1195031603, ProductId = nil },
+        ["Instant Rank Up 6"] = { Group = "RankUps", OldId = 1199177128, ProductId = nil },
+        ["Corgi Booth"] = { Group = "Booths", OldId = 1340443178, ProductId = nil },
+        ["Cupcake Booth"] = { Group = "Booths", OldId = 1340442140, ProductId = nil },
+        ["Galaxy Booth"] = { Group = "Booths", OldId = 1340443573, ProductId = nil },
+        ["Axolotl Booth"] = { Group = "Booths", OldId = 1346971388, ProductId = nil },
+        ["Hippomelon Booth"] = { Group = "Booths", OldId = 1346979136, ProductId = nil },
+        ["Glitched Booth"] = { Group = "Booths", OldId = 1346992707, ProductId = nil },
+        ["Parrot Booth"] = { Group = "Booths", OldId = 1382261665, ProductId = nil },
+        ["Unicorn Booth"] = { Group = "Booths", OldId = 1382262015, ProductId = nil },
+        ["Neon Twilight Booth"] = { Group = "Booths", OldId = 1382262370, ProductId = nil },
+        ["Fire Booth"] = { Group = "Booths", OldId = 1382262541, ProductId = nil },
+        ["Diamond Booth"] = { Group = "Booths", OldId = 1382262682, ProductId = nil },
+        ["Instant Dark Matter Tier 1"] = { Group = "DarkMatter", OldId = 1204613049, ProductId = nil },
+        ["Instant Dark Matter Tier 2"] = { Group = "DarkMatter", OldId = 1204613391, ProductId = nil },
+        ["Instant Dark Matter Tier 3"] = { Group = "DarkMatter", OldId = 1204613486, ProductId = nil },
+        ["Instant Dark Matter Tier 4"] = { Group = "DarkMatter", OldId = 1204613518, ProductId = nil },
+        ["Instant Dark Matter Tier 5"] = { Group = "DarkMatter", OldId = 1204613532, ProductId = nil },
+        ["Instant Dark Matter Tier 6"] = { Group = "DarkMatter", OldId = 1204613550, ProductId = nil },
+        ["Instant Dark Matter Tier 7"] = { Group = "DarkMatter", OldId = 1291342229, ProductId = nil },
+        ["Instant Dark Matter Tier 8"] = { Group = "DarkMatter", OldId = 1291342377, ProductId = nil },
+        ["Instant Dark Matter Tier 9"] = { Group = "DarkMatter", OldId = 1291342457, ProductId = nil },
+        ["Bank Tier 2"] = { Group = "Banks", OldId = 1228140504, ProductId = nil },
+        ["Bank Tier 3"] = { Group = "Banks", OldId = 1228140516, ProductId = nil },
+        ["Bank Tier 4"] = { Group = "Banks", OldId = 1228140531, ProductId = nil },
+        ["Bank Tier 5"] = { Group = "Banks", OldId = 1228140544, ProductId = nil },
+        ["Bank Tier 6"] = { Group = "Banks", OldId = 1228140560, ProductId = nil },
+        ["Bank Tier 7"] = { Group = "Banks", OldId = 1228140571, ProductId = nil },
+        ["Octuple Egg Open"] = { Group = "Upgrades", OldId = 1333944573, ProductId = nil },
+        ["15 Pets Equipped"] = { Group = "Upgrades", OldId = 1194596655, ProductId = nil },
+        ["Infinite Pets"] = { Group = "Upgrades", OldId = 1508518488, ProductId = nil },
+        ["Daycare Tier 1"] = { Group = "Upgrades", OldId = 1378709263, ProductId = nil },
+        ["Reset Events"] = { Group = "EventReset", OldId = 1555943865, ProductId = nil },
+        ["Exclusive Egg"] = { Group = "ExclusiveEggs", OldId = 1586437427, ProductId = nil },
+        ["3 Exclusive Eggs"] = { Group = "ExclusiveEggs", OldId = 1586437829, ProductId = nil },
+        ["10 Exclusive Eggs"] = { Group = "ExclusiveEggs", OldId = 1586438154, ProductId = nil },
+        ["100 Exclusive Eggs"] = { Group = "ExclusiveEggs", OldId = 1586438666, ProductId = nil },
+        ["Huge Machine Convert Tier 1"] = { Group = "HugeMachine", OldId = 1368345021, ProductId = nil },
+        ["Huge Machine Convert Tier 2"] = { Group = "HugeMachine", OldId = 1369384557, ProductId = nil },
+        ["Huge Machine Convert Tier 3"] = { Group = "HugeMachine", OldId = 1369384615, ProductId = nil },
+        ["Lazar Gun"] = { Group = "LazarGun", OldId = 1382263749, ProductId = nil }
+    },
+    PassProductPrefix = "PSX Gamepass: "
+}
+
+function module.IsFree(p2, p3)
+    if p2 and module.FreePasses[p2] then
+        return true
+    end
+
+    if p3 == nil then
+        return false
+    end
+
+    for iterFirst, iterSecond in module.FreePasses, nil, nil do
+        local text: string = tostring(iterSecond)
+        local text2: string = tostring(p3)
+
+        if text == text2 then
+            return true
+        end
+    end
+
+    return false
+end
+function module.PassDisabled(p4)
+    for iterFirst, iterSecond in module.Passes, nil, nil do
+        if module.DisabledPasses[iterSecond.Pass] and (p4 == iterSecond.Pass or tostring(iterSecond.OldPassId) == tostring(p4)) then
+            return true
+        end
+    end
+
+    return false
+end
+function module.PassRow(p5)
+    for iterFirst, iterSecond in module.Passes, nil, nil do
+        if p5 == iterSecond.Pass or p5 == iterSecond.OldPassId then
+            return iterSecond
+        end
+    end
+
+    return nil
+end
+function module.Id(p6)
+    local v18 = module.Products[p6]
+
+    if v18 then
+        local productId = v18.ProductId
+        local u20: boolean = false
+
+        if type(productId) == "number" then
+            u20 = productId > 0
+        end
+
+        if u20 then
+            return v18.ProductId
+        end
+
+        return nil
+    end
+
+    return nil
+end
+function module.PassProductId(p7)
+    local v22 = module.PassRow(p7)
+
+    if v22 then
+        local productId = v22.ProductId
+        local u24: boolean = false
+
+        if type(productId) == "number" then
+            u24 = productId > 0
+        end
+
+        if u24 then
+            return v22.ProductId
+        end
+
+        return nil
+    end
+
+    return nil
+end
+function module.PassSale(p8)
+    local v26 = module.PassRow(p8)
+
+    if v26 and not module.IsFree(v26.Pass, v26.OldPassId) and not module.DisabledPasses[v26.Pass] then
+        local productId = v26.ProductId
+        local u28: boolean = false
+
+        if type(productId) == "number" then
+            u28 = productId > 0
+        end
+
+        if u28 then
+            return v26.ProductId, true
+        end
+
+        if module.SellPsxGamepasses == true then
+            local oldPassId = v26.OldPassId
+            local u30: boolean = false
+
+            if type(oldPassId) == "number" then
+                u30 = oldPassId > 0
+            end
+
+            if u30 then
+                return v26.OldPassId, false
+            end
+
+            return nil, false
+        end
+
+        return nil, false
+    end
+
+    return nil, false
+end
+function module.PassSellable(p9)
+    return module.PassSale(p9) ~= nil
+end
+function module.PassWeekProductId()
+    local productId = module.PassWeek.ProductId
+    local u33: boolean = false
+
+    if type(productId) == "number" then
+        u33 = productId > 0
+    end
+
+    if u33 then
+        return module.PassWeek.ProductId
+    end
+
+    return nil
+end
+function module.PassWeekEnds(p10)
+    local v35 = if type(p10) == "table" then p10.RebornPassWeek else nil
+    local v36 = if type(v35) == "table" then v35.Ends else nil
+
+    if type(v36) == "number" and v36 == v36 and v36 < math.huge then
+        return v36
+    end
+
+    return 0
+end
+function module.PassWeekLeft(p11, p12)
+    local v39 = module.PassWeekEnds(p11)
+
+    return (math.max(v39 - p12, 0))
+end
+function module.PassWeekCovers(p13, p14, p15)
+    local u43: boolean = false
+
+    if module.PassRow(p14) ~= nil then
+        u43 = not module.PassDisabled(p14)
+
+        if u43 then
+            u43 = module.PassWeekLeft(p13, p15) > 0
+        end
+    end
+
+    return u43
+end
+function module.OwnsForever(p16, p17)
+    if module.IsFree(nil, p17) then
+        return true
+    end
+
+    for iterFirst, iterSecond in if type(p16) == "table" and type(p16.Gamepasses) == "table" then p16.Gamepasses else {}, nil, nil do
+        local text: string = tostring(iterSecond)
+        local text3: string = tostring(p17)
+
+        if text == text3 then
+            return true
+        end
+    end
+
+    return false
+end
+function module.OwnsAllPassesForever(p18)
+    for iterFirst, iterSecond in module.Passes, nil, nil do
+        if not module.DisabledPasses[iterSecond.Pass] and not module.OwnsForever(p18, iterSecond.OldPassId) then
+            return false
+        end
+    end
+
+    return true
+end
+function module.Product(p19)
+    if module.Retired[p19] then
+        return nil
+    end
+
+    local v54 = module.Products[p19]
+
+    if v54 and module.Groups[v54.Group] == true then
+        local productId = v54.ProductId
+        local u56: boolean = false
+
+        if type(productId) == "number" then
+            u56 = productId > 0
+        end
+
+        if u56 then
+            return v54.ProductId
+        end
+
+        return nil
+    end
+
+    return nil
+end
+function module.ReceiptId(p20)
+    if module.Products[p20] then
+        return module.Product(p20)
+    end
+
+    if p20 == module.PassWeek.Name then
+        return module.PassWeekProductId()
+    end
+
+    local passProductPrefix = module.PassProductPrefix
+
+    if string.sub(p20, 1, #passProductPrefix) == passProductPrefix then
+        local passProductId = module.PassProductId
+        local v60 = string.sub(p20, #passProductPrefix + 1)
+
+        return passProductId(v60)
+    end
+
+    return nil
+end
+function module.Resolve(p21, p22)
+    local u63: boolean = false
+
+    if type(p21) == "number" then
+        u63 = p21 > 0
+    end
+
+    if not u63 then
+        return nil
+    end
+
+    if not p22 then
+        local v64 = module.PassRow(p21)
+
+        if v64 then
+            local productId = v64.ProductId
+            local u66: boolean = false
+
+            if type(productId) == "number" then
+                u66 = productId > 0
+            end
+
+            if u66 then
+                return v64.ProductId
+            end
+
+            return nil
+        end
+
+        return nil
+    end
+
+    if module.PassWeekProductId() and module.PassWeekProductId() == p21 then
+        return p21
+    end
+
+    for iterFirst, iterSecond in module.Passes, nil, nil do
+        local v69 = iterSecond.ProductId
+        local u70: boolean = false
+
+        if type(v69) == "number" then
+            u70 = v69 > 0
+        end
+
+        if u70 and p21 == iterSecond.ProductId then
+            return p21
+        end
+    end
+
+    for iterFirst2, iterSecond2 in module.Products, nil, nil do
+        if p21 == iterSecond2.OldId then
+            return module.Product(iterFirst2)
+        end
+
+        local v73 = iterSecond2.ProductId
+        local u74: boolean = false
+
+        if type(v73) == "number" then
+            u74 = v73 > 0
+        end
+
+        if u74 and p21 == iterSecond2.ProductId then
+            return module.Product(iterFirst2)
+        end
+    end
+
+    return nil
+end
+function module.ToOld(p23)
+    for iterFirst, iterSecond in module.Products, nil, nil do
+        local productId = iterSecond.ProductId
+        local u79: boolean = false
+
+        if type(productId) == "number" then
+            u79 = productId > 0
+        end
+
+        if u79 and p23 == iterSecond.ProductId then
+            return iterSecond.OldId
+        end
+    end
+
+    return p23
+end
+function module.GroupSellable(p24)
+    if module.Groups[p24] == true then
+        for iterFirst, iterSecond in module.Products, nil, nil do
+            if p24 == iterSecond.Group then
+                local productId = iterSecond.ProductId
+                local u84: boolean = false
+
+                if type(productId) == "number" then
+                    u84 = productId > 0
+                end
+
+                if u84 then
+                    return true
+                end
+            end
+        end
+
+        return false
+    end
+
+    return false
+end
+function module.AnyPassSellable()
+    for iterFirst, iterSecond in module.Passes, nil, nil do
+        if module.PassSellable(iterSecond.Pass) then
+            return true
+        end
+    end
+
+    return false
+end
+function module.AnySellable()
+    if not module.AnyPassSellable() and not module.PassWeekProductId() then
+        for iterValue in module.Products, nil, nil do
+            if module.Product(iterValue) then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    return true
+end
+
+return module
