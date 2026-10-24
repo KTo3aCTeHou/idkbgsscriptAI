@@ -1,0 +1,64 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.Modules
+-- Took 0.21s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local defaultStats = require(script.DefaultStats)
+local fFlags = require(script.FFlags)
+local smartCache = require(script.SmartCache)
+local mutex = require(script.Mutex)
+local random = require(script.Random)
+local promise = require(script.Promise)
+local rbTreeList = require(script.RBTreeList)
+local leftistHeap = require(script.LeftistHeap)
+local pets = require(script.Pets)
+local areas = require(script.Areas)
+local daycare = require(script.Daycare)
+local hpgItems = require(script.HPGItems)
+local hpgConverter = require(script.HPGConverter)
+local module: {[any]: any} = {
+    DefaultStats = defaultStats,
+    FFlags = fFlags,
+    SmartCache = smartCache,
+    Mutex = mutex,
+    Random = random,
+    Promise = promise,
+    RBTreeList = rbTreeList,
+    LeftistHeap = leftistHeap,
+    Pets = pets,
+    Areas = areas,
+    Daycare = daycare,
+    HPGItems = hpgItems,
+    HPGConverter = hpgConverter
+}
+local s1: string = ""
+
+for _, v in ipairs(script:GetChildren()) do
+    if v:IsA("ModuleScript") and module[v.Name] == nil then
+        local formattedText = string.format("%s = require(script.%s),\n", v.Name, v.Name)
+
+        s1 ..= formattedText
+    end
+end
+
+if #s1 > 0 then
+    warn(string.format("Unadded entries: \n\n%s\n", s1))
+end
+
+for k, _ in pairs(module) do
+    if not script:FindFirstChild(k) then
+        local stringFormat = string.format
+        local text: string = tostring(k)
+
+        warn(stringFormat("Unknown entry: %s", text))
+    end
+end
+
+for _, v in ipairs(script:GetChildren()) do
+    if v:IsA("ModuleScript") and module[v.Name] == nil then
+        module[v.Name] = require(v)
+    end
+end
+
+return module
