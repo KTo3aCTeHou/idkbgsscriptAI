@@ -1,0 +1,61 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.Client.Gamepasses
+-- Took 0.1s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local players: Players = game:GetService("Players")
+local library: Instance = game:GetService("ReplicatedStorage"):WaitForChild("Library")
+local client: Instance = library:WaitForChild("Client")
+local save = require(client.Save)
+local rebornProducts = require(library:WaitForChild("RebornProducts"))
+
+return {
+    Owns = function(p1, p2)
+        if rebornProducts.IsFree(nil, p1) then
+            return true
+        end
+
+        if rebornProducts.PassDisabled(p1) then
+            return false
+        end
+
+        local v8 = save.Get(p2 or players.LocalPlayer)
+
+        if rebornProducts.PassWeekCovers(v8, p1, workspace:GetServerTimeNow()) then
+            return true
+        end
+
+        if v8 then
+            local gamepasses = v8.Gamepasses
+
+            for _, v in pairs(v8.Gamepasses) do
+                local text: string = tostring(v)
+                local text2: string = tostring(p1)
+
+                if text == text2 then
+                    return true
+                end
+            end
+
+            return false
+        end
+
+        return false
+    end,
+    OwnsForever = function(p3)
+        local rebornProductsOwnsForever = rebornProducts.OwnsForever
+        local v16 = save.Get()
+
+        return rebornProductsOwnsForever(v16, p3)
+    end,
+    GetAll = function(p4)
+        local v18 = save.Get(p4 or players.LocalPlayer)
+
+        if v18 then
+            return v18.Gamepasses
+        end
+
+        return {}
+    end
+}

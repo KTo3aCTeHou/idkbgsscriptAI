@@ -1,0 +1,324 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.Player
+-- Took 1.46s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local players: Players = game:GetService("Players")
+
+local module: {[any]: any} = {
+    Optional = {},
+    Player = function(p1)
+        return p1 or players.LocalPlayer
+    end
+}
+
+function module.Optional.Character(p2)
+    return module.Player(p2).Character
+end
+function module.Character(p3)
+    local player = module.Player(p3)
+
+    return player.Character or player.CharacterAdded:Wait()
+end
+function module.Optional.PrimaryPart(p4)
+    local v8 = module.Optional.Character(p4)
+
+    return v8 and v8.PrimaryPart
+end
+function module.PrimaryPart(p5)
+    local v10 = module.Character(p5)
+    local primaryPart = v10.PrimaryPart
+
+    if primaryPart then
+        return primaryPart
+    end
+
+    v10:WaitForChild("HumanoidRootPart", math.huge)
+
+    local v12 = v10.PrimaryPart
+
+    assert(v12)
+
+    return v12
+end
+function module.Optional.Humanoid(p6)
+    local character = module.Optional.Character(p6)
+
+    return character and character:FindFirstChildOfClass("Humanoid")
+end
+function module.Humanoid(p7)
+    local character = module.Character(p7)
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+    if humanoid then
+        return humanoid
+    end
+
+    character:WaitForChild("Humanoid", math.huge)
+
+    local humanoid2 = character:FindFirstChildOfClass("Humanoid")
+
+    assert(humanoid2)
+
+    return humanoid2
+end
+function module.Optional.Part(p8, p9)
+    return (module.Character(p8):FindFirstChild(p9))
+end
+function module.Part(p10, childName)
+    return (module.Character(p10):WaitForChild(childName, math.huge))
+end
+function module.Optional.EmbeddedPart(p12, p13, p14)
+    local v26 = module.Optional.Part(p12, p13)
+
+    return v26 and v26:FindFirstChild(p14)
+end
+function module.EmbeddedPart(p15, p16, childName)
+    return (module.Part(p15, p16):WaitForChild(childName, math.huge))
+end
+function module.Optional.Head(p18)
+    return module.Optional.Part(p18, "Head")
+end
+function module.Head(p19)
+    return module.Part(p19, "Head")
+end
+function module.Optional.UpperTorso(p20)
+    return module.Optional.Part(p20, "UpperTorso")
+end
+function module.UpperTorso(p21)
+    return module.Part(p21, "UpperTorso")
+end
+function module.Optional.LowerTorso(p22)
+    return module.Optional.Part(p22, "LowerTorso")
+end
+function module.LowerTorso(p23)
+    return module.Part(p23, "LowerTorso")
+end
+function module.Optional.LeftFoot(p24)
+    return module.Optional.Part(p24, "LeftFoot")
+end
+function module.LeftFoot(p25)
+    return module.Part(p25, "LeftFoot")
+end
+function module.Optional.LeftHand(p26)
+    return module.Optional.Part(p26, "LeftHand")
+end
+function module.LeftHand(p27)
+    return module.Part(p27, "LeftHand")
+end
+function module.Optional.LeftLowerArm(p28)
+    return module.Optional.Part(p28, "LeftLowerArm")
+end
+function module.LeftLowerArm(p29)
+    return module.Part(p29, "LeftLowerArm")
+end
+function module.Optional.LeftLowerLeg(p30)
+    return module.Optional.Part(p30, "LeftLowerLeg")
+end
+function module.LeftLowerLeg(p31)
+    return module.Part(p31, "LeftLowerLeg")
+end
+function module.Optional.LeftUpperArm(p32)
+    return module.Optional.Part(p32, "LeftUpperArm")
+end
+function module.LeftUpperArm(p33)
+    return module.Part(p33, "LeftUpperArm")
+end
+function module.Optional.LeftUpperLeg(p34)
+    return module.Optional.Part(p34, "LeftUpperLeg")
+end
+function module.LeftUpperLeg(p35)
+    return module.Part(p35, "LeftUpperLeg")
+end
+function module.Optional.RightFoot(p36)
+    return module.Optional.Part(p36, "RightFoot")
+end
+function module.RightFoot(p37)
+    return module.Part(p37, "RightFoot")
+end
+function module.Optional.RightHand(p38)
+    return module.Optional.Part(p38, "RightHand")
+end
+function module.RightHand(p39)
+    return module.Part(p39, "RightHand")
+end
+function module.Optional.RightLowerArm(p40)
+    return module.Optional.Part(p40, "RightLowerArm")
+end
+function module.RightLowerArm(p41)
+    return module.Part(p41, "RightLowerArm")
+end
+function module.Optional.RightLowerLeg(p42)
+    return module.Optional.Part(p42, "RightLowerLeg")
+end
+function module.RightLowerLeg(p43)
+    return module.Part(p43, "RightLowerLeg")
+end
+function module.Optional.RightUpperArm(p44)
+    return module.Optional.Part(p44, "RightUpperArm")
+end
+function module.RightUpperArm(p45)
+    return module.Part(p45, "RightUpperArm")
+end
+function module.Optional.RightUpperLeg(p46)
+    return module.Optional.Part(p46, "RightUpperLeg")
+end
+function module.RightUpperLeg(p47)
+    return module.Part(p47, "RightUpperLeg")
+end
+function module.Optional.Root(p48)
+    return module.Optional.EmbeddedPart(p48, "LowerTorso", "Root")
+end
+function module.Root(p49)
+    return module.EmbeddedPart(p49, "LowerTorso", "Root")
+end
+function module.Optional.Waist(p50)
+    return module.Optional.EmbeddedPart(p50, "UpperTorso", "Waist")
+end
+function module.Waist(p51)
+    return module.EmbeddedPart(p51, "UpperTorso", "Waist")
+end
+function module.Optional.Neck(p52)
+    return module.Optional.EmbeddedPart(p52, "Head", "Neck")
+end
+function module.Neck(p53)
+    return module.EmbeddedPart(p53, "Head", "Neck")
+end
+function module.Optional.LeftAnkle(p54)
+    return module.Optional.EmbeddedPart(p54, "LeftFoot", "LeftAnkle")
+end
+function module.LeftAnkle(p55)
+    return module.EmbeddedPart(p55, "LeftFoot", "LeftAnkle")
+end
+function module.Optional.LeftWrist(p56)
+    return module.Optional.EmbeddedPart(p56, "LeftHand", "LeftWrist")
+end
+function module.LeftWrist(p57)
+    return module.EmbeddedPart(p57, "LeftHand", "LeftWrist")
+end
+function module.Optional.LeftElbow(p58)
+    return module.Optional.EmbeddedPart(p58, "LeftLowerArm", "LeftElbow")
+end
+function module.LeftElbow(p59)
+    return module.EmbeddedPart(p59, "LeftLowerArm", "LeftElbow")
+end
+function module.Optional.LeftKnee(p60)
+    return module.Optional.EmbeddedPart(p60, "LeftLowerLeg", "LeftKnee")
+end
+function module.LeftKnee(p61)
+    return module.EmbeddedPart(p61, "LeftLowerLeg", "LeftKnee")
+end
+function module.Optional.LeftShoulder(p62)
+    return module.Optional.EmbeddedPart(p62, "LeftUpperArm", "LeftShoulder")
+end
+function module.LeftShoulder(p63)
+    return module.EmbeddedPart(p63, "LeftUpperArm", "LeftShoulder")
+end
+function module.Optional.LeftHip(p64)
+    return module.Optional.EmbeddedPart(p64, "LeftUpperLeg", "LeftHip")
+end
+function module.LeftHip(p65)
+    return module.EmbeddedPart(p65, "LeftUpperLeg", "LeftHip")
+end
+function module.Optional.RightAnkle(p66)
+    return module.Optional.EmbeddedPart(p66, "RightFoot", "RightAnkle")
+end
+function module.RightAnkle(p67)
+    return module.EmbeddedPart(p67, "RightFoot", "RightAnkle")
+end
+function module.Optional.RightWrist(p68)
+    return module.Optional.EmbeddedPart(p68, "RightHand", "RightWrist")
+end
+function module.RightWrist(p69)
+    return module.EmbeddedPart(p69, "RightHand", "RightWrist")
+end
+function module.Optional.RightElbow(p70)
+    return module.Optional.EmbeddedPart(p70, "RightLowerArm", "RightElbow")
+end
+function module.RightElbow(p71)
+    return module.EmbeddedPart(p71, "RightLowerArm", "RightElbow")
+end
+function module.Optional.RightKnee(p72)
+    return module.Optional.EmbeddedPart(p72, "RightLowerLeg", "RightKnee")
+end
+function module.RightKnee(p73)
+    return module.EmbeddedPart(p73, "RightLowerLeg", "RightKnee")
+end
+function module.Optional.RightShoulder(p74)
+    return module.Optional.EmbeddedPart(p74, "RightUpperArm", "RightShoulder")
+end
+function module.RightShoulder(p75)
+    return module.EmbeddedPart(p75, "RightUpperArm", "RightShoulder")
+end
+function module.Optional.RightHip(p76)
+    return module.Optional.EmbeddedPart(p76, "RightUpperLeg", "RightHip")
+end
+function module.RightHip(p77)
+    return module.EmbeddedPart(p77, "RightUpperLeg", "RightHip")
+end
+function module.Optional.PlayerGui(p78)
+    return (module.Player(p78):FindFirstChild("PlayerGui"))
+end
+function module.PlayerGui(p79)
+    return (module.Player(p79):WaitForChild("PlayerGui", math.huge))
+end
+function module.Mouse(p80)
+    return module.Player(p80):GetMouse()
+end
+function module.Camera(_)
+    return workspace.CurrentCamera
+end
+function module.Name(p82)
+    return module.Player(p82).Name
+end
+function module.DisplayName(p83)
+    return module.Player(p83).DisplayName
+end
+function module.Optional.GetAppliedDescription(p84)
+    local v97 = module.Optional.Humanoid(p84)
+
+    return v97 and v97:GetAppliedDescription()
+end
+function module.GetAppliedDescription(p85)
+    return module.Humanoid(p85):GetAppliedDescription()
+end
+function module.Optional.Animator(p86)
+    local v100 = module.Optional.Humanoid(p86)
+
+    if v100 then
+        local animator = v100:FindFirstChildOfClass("Animator")
+
+        if animator then
+            return animator
+        end
+
+        local animationController = v100:FindFirstChildOfClass("AnimationController")
+
+        if animationController then
+            return animationController
+        end
+
+        return v100
+    end
+
+    return nil
+end
+function module.Animator(p87)
+    local v104 = module.Humanoid(p87)
+    local animator = v104:FindFirstChildOfClass("Animator")
+
+    if animator then
+        return animator
+    end
+
+    local animationController = v104:FindFirstChildOfClass("AnimationController")
+
+    if animationController then
+        return animationController
+    end
+
+    return v104
+end
+
+return module
