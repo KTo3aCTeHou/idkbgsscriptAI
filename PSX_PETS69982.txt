@@ -1,0 +1,43 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.Modules.Pets
+-- Took 0.11s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local module: {[any]: any} = { MAX_OWNER_HISTORY_LENGTH = 2 }
+
+function module.AddOwner(p1, _, p3)
+    local t2 = p3.h
+
+    if not t2 then
+        t2 = {
+            n = 0,
+            l = {}
+        }
+        p3.h = t2
+    end
+
+    assert(t2)
+
+    local u6: boolean = true
+
+    if #t2.l > 0 and p1 == t2.l[1][1] then
+        u6 = false
+    end
+
+    if u6 then
+        t2.n = t2.n + 1
+
+        local l = t2.l
+        local timestamp = os.time()
+        local floored = math.floor(timestamp)
+
+        table.insert(l, 1, { p1, floored })
+    end
+
+    while #t2.l > module.MAX_OWNER_HISTORY_LENGTH do
+        table.remove(t2.l, #t2.l)
+    end
+end
+
+return module

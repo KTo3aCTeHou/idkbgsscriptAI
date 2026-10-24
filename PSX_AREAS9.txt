@@ -1,0 +1,60 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.Modules.Areas
+-- Took 0.99s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local t1: {[any]: any} = { Coins = 1, Diamonds = 2, Damage = 3 }
+local t2: {[any]: any} = {}
+
+for k, v in pairs(t1) do
+    t2[v] = k
+end
+
+local module: {[any]: any} = {
+    MAX_COIN_STAGE = 4,
+    SPECIAL_BONUS_TYPES = t1,
+    SPECIAL_BONUS_TYPE_NAMES = t2,
+    DIAMOND_BAG_TIERS = {
+        "Diamond Bag Tier 1",
+        "Diamond Bag Tier 2",
+        "Diamond Bag Tier 3",
+        "Diamond Bag Tier 4",
+        "Diamond Bag Tier 5"
+    }
+}
+
+function module.ComputeCoinStage(p1, p2, p3)
+    local n1 = 2
+
+    if p1.modelHasStages then
+        n1 = module.MAX_COIN_STAGE
+    end
+
+    local v10 = math.clamp(p3, 0, p2.mh)
+    local floored = math.floor((1 - v10 / p2.mh) * (n1 - 1))
+
+    return math.clamp(floored + 1, 1, n1), n1
+end
+function module.CalcSpecialBonusMultiplier(p4, p5)
+    local n1 = 0
+    local u15: boolean = false
+
+    for _, v in ipairs(p4.l) do
+        if p5 == v.t then
+            n1 += v.m
+            u15 = true
+        end
+    end
+
+    if u15 then
+        return n1
+    end
+
+    return nil
+end
+function module.CalcSpecialBonusCurrencyMultiplier(p6, p7)
+    return module.CalcSpecialBonusMultiplier(p6, p7 == "Diamonds" and t1.Diamonds or t1.Coins)
+end
+
+return module
