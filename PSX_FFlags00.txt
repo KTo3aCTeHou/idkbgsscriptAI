@@ -1,0 +1,104 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.Modules.FFlags
+-- Took 0.26s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+local t1: {[any]: any} = {}
+local t2: {[any]: any} = {}
+local n1: number = 1
+
+local function AddOptions(p1, p2, p3)
+    for k, v in pairs(p3) do
+        local typeName: string = typeof(k)
+
+        assert(typeName == "string")
+
+        local typeName2: string = typeof(v)
+
+        assert(typeName2 == "table")
+        assert(p1[k] == nil, "FFlag defined twice: " .. k)
+
+        local n2: number = n1 + (if v.Important then 1000 else 0)
+
+        n1 += 1
+
+        local vName = v.Name
+
+        if not vName then
+            vName = k:gsub("[A-Z]", function(p4)
+                return " " .. p4
+            end):gsub("^.", string.upper)
+        end
+
+        local vDefault = v.Default
+        local v15 = v.Important or false
+        local vMin = v.Min
+        local vMax = v.Max
+        local v18 = v.Type
+
+        if not v18 then
+            assert(vDefault ~= nil)
+            v18 = typeof(vDefault)
+        end
+
+        local v19 = v.Nullable or vDefault == nil
+        local u20: boolean = v.Toggles ~= nil
+        local t3 = v.Toggles
+
+        if not t3 then
+            t3 = {}
+            assert(t3)
+
+            if v18 == "boolean" then
+                table.insert(t3, false)
+                table.insert(t3, true)
+            end
+        end
+
+        if not table.find(t3, vDefault) then
+            table.insert(t3, vDefault)
+        end
+
+        if v19 and not table.find(t3, nil) then
+            table.insert(t3, nil)
+        end
+
+        p1[k] = {
+            Order = n2,
+            Key = k,
+            Name = vName,
+            Type = v18,
+            Nullable = v19,
+            Default = vDefault,
+            Toggles = t3,
+            HasToggles = u20,
+            Important = v15,
+            Min = vMin,
+            Max = vMax
+        }
+        p2[k] = k
+    end
+end
+
+AddOptions(t1, t2, require(script.Custom))
+
+return {
+    Options = t1,
+    Keys = t2,
+    AddOptions = AddOptions,
+    Admins = {
+        [-1] = true,
+        [-2] = true,
+        [-3] = true,
+        [19717956] = true,
+        [653248807] = true,
+        [660900011] = true,
+        [1210210] = true,
+        [2882755487] = true,
+        [2213470865] = true,
+        [2878290231] = true,
+        [13365322] = true,
+        [63844404] = true
+    }
+}

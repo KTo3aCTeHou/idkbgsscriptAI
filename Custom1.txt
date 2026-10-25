@@ -1,0 +1,246 @@
+-- Script Path: game:GetService("ReplicatedStorage").Library.Modules.FFlags.Custom
+-- Took 0.24s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+-- Decompiled using ByteFall
+-- discord.gg/pHTnqmmWzk
+return {
+    Banks = { Default = true, Important = true },
+    Trading = { Default = true, Important = true },
+    TradingBooths = { Default = true },
+    UpgradeMachine = { Default = true },
+    GoldenMachine = { Default = true },
+    RainbowMachine = { Default = true },
+    DarkMatterMachine = { Default = true },
+    BoostMachine = { Default = true },
+    FuseMachine = { Default = true },
+    HugeMachine = { Default = true },
+    HardcoreJoining = { Default = true },
+    TradingJoining = { Default = true },
+    RankRewards = { Default = true },
+    VIPRewards = { Default = true },
+    EggOpening = { Default = true },
+    ExclusiveEggs = { Default = true },
+    Purchases = { Default = true, Important = true },
+    CoinRewards = { Default = true },
+    DiamondRewards = { Default = true },
+    Lootbags = { Default = true },
+    LuckyBlockRewards = { Default = true },
+    Cannons = { Default = true },
+    Gates = { Default = true },
+    Merchants = { Default = true },
+    Inventory = { Default = true },
+    BankInterest = { Default = false },
+    DistanceChecksEgg = { Default = true },
+    DistanceChecksGate = { Default = true },
+    DistanceChecksInteractable = { Default = true },
+    DistanceChecksCannon = { Default = true },
+    ChristmasSleigh = { Default = false },
+    ChristmasSnowballs = { Default = false },
+    Mailbox = { Default = true },
+    MailboxRefunds = { Default = true },
+    MailboxClaiming = { Default = true },
+    MailboxReject = { Default = true },
+    MailboxSending = { Default = true },
+    MailboxHuges = { Default = true },
+    MailboxTitanics = { Default = false },
+    ChristmasRewards = { Default = false },
+    MerchCodes = { Default = true },
+    Teleporting = { Default = true },
+    TitanicTransactions = { Default = true },
+    BanksDepositTitanic = { Default = false },
+    BanksDepositHuge = { Default = true },
+    BanksDepositGift = { Default = true },
+    BanksDepositDiamonds = { Default = true },
+    AllowNonOwnerAccessBanks = { Default = true },
+    DragDelete = { Default = true },
+    BankDragDelete = { Default = true },
+    InventoryDragDelete = { Default = true },
+    UpdateGift = { Default = true },
+    ExclusiveEggTimer = { Default = true },
+    AllowBankOnNonProduction = { Default = false, Important = true },
+    CoinsEvent = {
+        Default = 0,
+        Min = 0,
+        Max = 50,
+        Toggles = {
+            0,
+            2,
+            3,
+            5,
+            10,
+            20,
+            30,
+            50
+        }
+    },
+    LuckEvent = {
+        Default = 0,
+        Min = 0,
+        Max = 50,
+        Toggles = {
+            0,
+            2,
+            3,
+            5,
+            10,
+            20,
+            30,
+            50
+        }
+    },
+    DiamondsEvent = {
+        Default = 0,
+        Min = 0,
+        Max = 50,
+        Toggles = {
+            0,
+            2,
+            3,
+            5,
+            10,
+            20,
+            30,
+            50
+        }
+    },
+    DominusGate = { Default = true },
+    ScavengerClaim = { Default = true },
+    ScavengerHunt = { Default = true },
+    CoolbeansPatch = { Default = true },
+    Daycare = { Default = true },
+    Auction = { Default = true },
+    LazarBeam = { Default = true },
+    DiamondParty = { Default = true },
+    RAP = { Default = true },
+    RAPAuction = { Default = true },
+    CustomJoinFriends = { Default = true },
+    ThanksForPlayingPet = { Default = true },
+    MassiveCometSpawn = { Default = true },
+    MiniCometSpawn = { Default = true },
+    CometEggOpen = { Default = true },
+    GiantRainbowEvent = { Default = true },
+    HugeChefCatPromo = { Default = false },
+    Limit100PetOnCoin = { Default = true },
+    CoinBalancer = { Default = true },
+    AprilPaintballs = { Default = true },
+    InfinitePetPass = { Default = false },
+    EasterEggHuntEvent = { Default = true },
+    Fruit = { Default = true },
+    DiamondBags = { Default = true },
+    ReleasePet = { Default = true },
+    RespawnAfterDeath = { Default = true },
+    MiningSpeedMultiplier = { Default = 1 },
+    RojanAPI = { Default = true },
+    Quests = { Default = true },
+    QuestRewards = { Default = true },
+    EvolveMachine = { Default = true },
+    GlobalVote = { Default = "Add Halloween event?" },
+    GlobalVoteKey = { Default = "U99Halloween1" },
+    ReturningPlayerPet = { Default = true },
+    Voting = { Default = true },
+    GroupHugeReward = { Default = true },
+    VerifyTwitterLimiter = { Default = true },
+    GlobalTitanicAnnouncements = { Default = true },
+    BoothPublishInterval = { Default = 0 },
+    BoothLoadInterval = { Default = 0 },
+    BoothAnyPets = { Default = false },
+    BoothSearchCooldown = { Default = 1 },
+    BloombergTerminal = { Default = true },
+    BloombergScreenDataSubmission = { Default = true },
+    BloombergScreenSound = { Default = true },
+    BoothPublishForce = { Default = false },
+    DisableBankNearUpdate = { Default = true },
+    WaitForUpdateAlwaysFalse = { Default = false },
+    SandcastleEvent = { Default = true },
+    Events = { Default = true },
+    EventRewards = { Default = true },
+    WaterLauncher = { Default = true },
+    SummerIslandsEvent = { Default = true },
+    RefundNightmare = { Default = true },
+    VisitorGift = { Default = true },
+    VisitorFix = { Default = true },
+    ClawMachine = { Default = true },
+    ClawMachineRewards = { Default = true },
+    YeetRewards = { Default = true },
+    AntiAFK = { Default = true },
+    FixHugeAppleCapybara = { Default = false },
+    FixHugeAppleCapybaraNEW = { Default = true },
+    AF1 = { Default = true },
+    AF2 = { Default = true },
+    DiamondMineTimeLimit = { Default = true },
+    AFX = { Default = 3600 },
+    AFX2 = { Default = true },
+    HappyRock = { Default = false },
+    FixHCHappyRock = { Default = false },
+    FixINSerials = { Default = false },
+    NewUGCS = { Default = false },
+    PetTransfers = { Default = false },
+    PSXReborn_WindowStart = {
+        Default = 0,
+        Min = 0,
+        Name = "PSX Reborn: reward window start (unix seconds)"
+    },
+    PSXReborn_WindowEnd = {
+        Default = 0,
+        Min = 0,
+        Name = "PSX Reborn: reward window end (unix seconds, exclusive)"
+    },
+    PSXReborn_PaidWalkspeed = {
+        Default = true,
+        Name = "PSX Reborn: walk speed is the Upgrade Station's Player Speed (2021), not 26 for everyone"
+    },
+    PSXReborn_FreeGiftCoinMinutes = {
+        Default = 2,
+        Name = "PSX Reborn: a Free Gifts coin bag is worth this many minutes of the player's own coin income (JUMBO x 14/6), negative is v1879's"
+    },
+    PSXReborn_FreeGiftCoinFloor = {
+        Default = 300,
+        Name = "PSX Reborn: a Free Gifts coin bag is never under this many coins (one Cracked Egg; JUMBO x 14/6)"
+    },
+    PSXReborn_VeteranBadge = {
+        Default = true,
+        Name = "PSX Reborn: award the Welcome Back! badge instead of the toast"
+    },
+    PSXReborn_OGTitle = {
+        Default = true,
+        Name = "PSX Reborn: OG title (chat tag and over the head) for owners of PSX's Welcome badge"
+    },
+    PSXReborn_CoinRewardExponent = {
+        Default = 0.6,
+        Name = "PSX Reborn: coin reward exponent (Hardcore 0.45, normal 0.6)"
+    },
+    PSXReborn_PetDamageDivisor = {
+        Default = 1,
+        Name = "PSX Reborn: pet damage divided by this (Hardcore 1e13 ^ 0.05 = 4.47, normal 1)"
+    },
+    PSXReborn_PetDamageFloor = {
+        Default = 1,
+        Name = "PSX Reborn: a pet hit never deals less than this after the divisor (Hardcore rounded to 0)"
+    },
+    PSXReborn_EquipSlotsMult = {
+        Default = 1,
+        Name = "PSX Reborn: equip slots multiplier on every slot the save has (1 is PSX: base 4, the 8 Pets pass 8; Hardcore 2)"
+    },
+    PSXReborn_HardcoreMachineCosts = {
+        Default = false,
+        Name = "PSX Reborn: Golden, Rainbow, Enchant, Fuse and Dark Matter use Hardcore's costs and odds"
+    },
+    PSXReborn_CoinDiamondMult = {
+        Default = 1,
+        Name = "PSX Reborn: diamonds dropped by coins, chests and diamond piles are multiplied by this (1 is v1879)"
+    },
+    PSXReborn_EventEnds = {
+        Default = 1793462400,
+        Min = 0,
+        Name = "PSX Reborn: the spawn event sign counts down to this (unix seconds; 1793462400 is 2026-10-31 11:00 Central)"
+    },
+    PSXReborn_ProdTestersOnly = {
+        Default = true,
+        Name = "PSX Reborn: the prod place admits only Mitchell and chickenputty (turn off at launch); the dev universe ignores it"
+    },
+    PSXReborn_Closed = {
+        Default = false,
+        Name = "PSX Reborn: closed, every player but FFlags admins is kicked on join and when it turns on"
+    }
+}
